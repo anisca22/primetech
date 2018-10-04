@@ -54,7 +54,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *   As the arm servo approaches 0, the arm position moves up (away from the floor).
  *   As the claw servo approaches 0, the claw opens up (drops the game element).
  */
-public class Robot
+public class HardwareRobot
 {
     /* Public OpMode members. */
     public DcMotor  leftMotor;
@@ -71,7 +71,7 @@ public class Robot
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public Robot() {
+    public HardwareRobot() {
     }
 
     /* Initialize standard Hardware interfaces */
@@ -96,5 +96,6 @@ public class Robot
         // Sensors
        colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
        odsSensor = hwMap.get(OpticalDistanceSensor.class, "odsSensor");
+       colorSensor.enableLed(true);
     }
 }
