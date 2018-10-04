@@ -57,9 +57,9 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Pushbot: Auto Drive By Time", group="Pushbot")
-@Disabled
-public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
+@Autonomous(name="DriveByLine", group="Autonomus")
+//@Disabled
+public class AutoDriveByLine extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareRobot         robot   = new HardwareRobot();   // Use a Pushbot's hardware
@@ -77,7 +77,22 @@ public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
         waitForStart();
 
         runtime.reset();
-        while (leftColor )
+        double leftColor = robot.odsSensor.getRawLightDetected();
+        double rightColor = robot.colorSensor.alpha();
+        while ((leftColor < 20 || rightColor < 20) && !gamepad1.a)
+        {
+            if (leftColor < 20)
+                robot.leftMotor.setPower(0.2);
+            else robot.leftMotor.setPower(0);
+            if (rightColor < 20)
+                robot.rightMotor.setPower(0.2);
+            else robot.rightMotor.setPower(0);
+            leftColor = robot.odsSensor.getRawLightDetected();
+            rightColor = robot.colorSensor.alpha();
+            telemetry.addData("Raw",    robot.odsSensor.getRawLightDetected());
+            telemetry.addData("Clear", robot.colorSensor.alpha());
+            telemetry.update();
+        }
         telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);
