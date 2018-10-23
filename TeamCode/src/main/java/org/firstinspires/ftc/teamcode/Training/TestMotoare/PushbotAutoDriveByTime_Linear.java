@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Training.TestMotoare;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
@@ -57,42 +57,69 @@ import org.firstinspires.ftc.robotcontroller.external.samples.HardwarePushbot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="DriveByLine", group="Autonomus")
-//@Disabled
-public class AutoDriveByLine extends LinearOpMode {
+@Autonomous(name="Pushbot: Auto Drive By Time", group="Pushbot")
+@Disabled
+public class PushbotAutoDriveByTime_Linear extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwareRobot         robot   = new HardwareRobot();   // Use a Pushbot's hardware
+    HardwarePushbot         robot   = new HardwarePushbot();   // Use a Pushbot's hardware
     private ElapsedTime     runtime = new ElapsedTime();
+
+
+    static final double     FORWARD_SPEED = 0.6;
+    static final double     TURN_SPEED    = 0.5;
 
     @Override
     public void runOpMode() {
 
+        /*
+         * Initialize the drive system variables.
+         * The init() method of the hardware class does all the work here
+         */
         robot.init(hardwareMap);
 
+        // Send telemetry message to signify robot waiting;
         telemetry.addData("Status", "Ready to run");    //
         telemetry.update();
 
         // Wait for the game to start (driver presses PLAY)
         waitForStart();
 
+        // Step through each leg of the path, ensuring that the Auto mode has not been stopped along the way
+
+        // Step 1:  Drive forward for 3 seconds
+        robot.leftDrive.setPower(FORWARD_SPEED);
+        robot.rightDrive.setPower(FORWARD_SPEED);
         runtime.reset();
-        double leftColor = robot.odsSensor.getRawLightDetected();
-        double rightColor = robot.colorSensor.alpha();
-        while ((leftColor < 20 || rightColor < 20) && !gamepad1.a)
-        {
-            if (leftColor < 20)
-                robot.leftMotor.setPower(0.2);
-            else robot.leftMotor.setPower(0);
-            if (rightColor < 20)
-                robot.rightMotor.setPower(0.2);
-            else robot.rightMotor.setPower(0);
-            leftColor = robot.odsSensor.getRawLightDetected();
-            rightColor = robot.colorSensor.alpha();
-            telemetry.addData("Raw",    robot.odsSensor.getRawLightDetected());
-            telemetry.addData("Clear", robot.colorSensor.alpha());
+        while (opModeIsActive() && (runtime.seconds() < 3.0)) {
+            telemetry.addData("Path", "Leg 1: %2.5f S Elapsed", runtime.seconds());
             telemetry.update();
         }
+
+        // Step 2:  Spin right for 1.3 seconds
+        robot.leftDrive.setPower(TURN_SPEED);
+        robot.rightDrive.setPower(-TURN_SPEED);
+        runtime.reset();
+        while (opModeIsActive() && (runtime.seconds() < 1.3)) {
+            telemetry.addData("Path", "Leg 2: %2.5f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+
+        // Step 3:  Drive Backwards for 1 Second
+        robot.leftDrive.setPower(-FORWARD_SPEED);
+        robot.rightDrive.setPower(-FORWARD_SPEED);
+        runtime.reset();
+        while (opModeIsActive() && (runtime.seconds() < 1.0)) {
+            telemetry.addData("Path", "Leg 3: %2.5f S Elapsed", runtime.seconds());
+            telemetry.update();
+        }
+
+        // Step 4:  Stop and close the claw.
+        robot.leftDrive.setPower(0);
+        robot.rightDrive.setPower(0);
+        robot.leftClaw.setPosition(1.0);
+        robot.rightClaw.setPosition(0.0);
+
         telemetry.addData("Path", "Complete");
         telemetry.update();
         sleep(1000);
