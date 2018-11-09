@@ -31,8 +31,10 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
+import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
 /**
@@ -55,46 +57,71 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  */
 public class HardwareRobot
 {
-    /* Public OpMode members. */
-    public DcMotor  leftMotor;
-    public DcMotor  rightMotor;
-    public ColorSensor colorSensor;
-    public OpticalDistanceSensor odsSensor;
+    ///DECLARARE MOTOARE
+    public DcMotor  frontLeftMotor;
+    public DcMotor  backLeftMotor;
+    public DcMotor  frontRightMotor;
+    public DcMotor  backRightMotor;
 
-    public final static double minColorODS = 0;
-    public final static double minColorCS = 0;
-    public final static double drivePower = 1;
+    public DcMotor  liftMotor;
+
+    ///DECLARARE SERVOURI
+    public Servo    capac;
+
+    //public ColorSensor colorSensor;
+    //public OpticalDistanceSensor odsSensor;
+
+    public final static double MAX_PUTERE = 1.0;
+    public final static double MIN_PUTERE = -1.0;
+
+    public final static double MAX_CAPAC = 1.0;
+    public final static double INIT_CAPAC = 0.5;
+    public final static double MIN_CAPAC = 0;
+
+    //public final static double minColorODS = 0;
+    //public final static double minColorCS = 0;
+    //public final static double drivePower = 1;
 
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public HardwareRobot() {
-    }
+    public HardwareRobot() {}
 
     /* Initialize standard Hardware interfaces */
     public void init(HardwareMap ahwMap) {
         // save reference to HW Map
         hwMap = ahwMap;
 
-        // Define and Initialize Motors
-        leftMotor  = hwMap.get(DcMotor.class, "leftMotor");
-        rightMotor = hwMap.get(DcMotor.class, "rightMotor");
-        leftMotor.setDirection(DcMotor.Direction.REVERSE);
+        // DEFINIRE MOTOARE
+        frontLeftMotor = hwMap.get(DcMotor.class, "frontLeftMotor");
+        backLeftMotor = hwMap.get(DcMotor.class, "backLeftMotor");
+        frontRightMotor = hwMap.get(DcMotor.class, "frontRightMotor");
+        backRightMotor = hwMap.get(DcMotor.class, "backRightMotor");
 
-        // Set all motors to zero power
-        leftMotor.setPower(0);
-        rightMotor.setPower(0);
+        // SETARE DIRECTIE
+        frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        // Set all motors to run without encoders.
-        // May want to use RUN_USING_ENCODERS if encoders are installed.
-        leftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        rightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        // PUTERE 0
+        frontLeftMotor.setPower(0);
+        backLeftMotor.setPower(0);
+        frontRightMotor.setPower(0);
+        backRightMotor.setPower(0);
+
+        liftMotor = hwMap.get(DcMotor.class, "liftMotor");
+        liftMotor.setDirection(DcMotor.Direction.FORWARD);
+        liftMotor.setPower(0);
+
+        capac = hwMap.get(Servo.class, "capac");
+        capac.setPosition(INIT_CAPAC);
 
         // Sensors
-       colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
-       odsSensor = hwMap.get(OpticalDistanceSensor.class, "odsSensor");
-       colorSensor.enableLed(true);
+       //colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
+       //odsSensor = hwMap.get(OpticalDistanceSensor.class, "odsSensor");
+       //colorSensor.enableLed(true);
     }
 }
