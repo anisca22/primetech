@@ -57,7 +57,6 @@ public class BasicOpMode_Iterative extends OpMode
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     HardwareRobot robot=new HardwareRobot();
-
     /*
      * Code to run ONCE when the driver hits INIT
      */
