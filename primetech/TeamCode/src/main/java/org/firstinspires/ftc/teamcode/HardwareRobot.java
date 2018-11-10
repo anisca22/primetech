@@ -63,10 +63,10 @@ public class HardwareRobot
     public DcMotor  frontRightMotor;
     public DcMotor  backRightMotor;
 
-    public DcMotor  liftMotor;
+    ///public DcMotor  liftMotor;
 
     ///DECLARARE SERVOURI
-    public Servo    capac;
+    //public Servo    capac;
 
     //public ColorSensor colorSensor;
     //public OpticalDistanceSensor odsSensor;
@@ -101,10 +101,10 @@ public class HardwareRobot
         backRightMotor = hwMap.get(DcMotor.class, "backRightMotor");
 
         // SETARE DIRECTIE
-        frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
-        backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
-        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
-        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
+        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
+        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // PUTERE 0
         frontLeftMotor.setPower(0);
@@ -112,12 +112,12 @@ public class HardwareRobot
         frontRightMotor.setPower(0);
         backRightMotor.setPower(0);
 
-        liftMotor = hwMap.get(DcMotor.class, "liftMotor");
-        liftMotor.setDirection(DcMotor.Direction.FORWARD);
-        liftMotor.setPower(0);
+        //liftMotor = hwMap.get(DcMotor.class, "liftMotor");
+        //liftMotor.setDirection(DcMotor.Direction.FORWARD);
+        //liftMotor.setPower(0);
 
-        capac = hwMap.get(Servo.class, "capac");
-        capac.setPosition(INIT_CAPAC);
+        //capac = hwMap.get(Servo.class, "capac");
+        //capac.setPosition(INIT_CAPAC);
 
         // Sensors
        //colorSensor = hwMap.get(ColorSensor.class, "colorSensor");
