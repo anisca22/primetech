@@ -50,35 +50,24 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Iterative OpMode", group="Iterative Opmode")
-@Disabled
+@TeleOp(name="Cum se misca robotul", group="Dragos Crisan")
+//@Disabled
 public class BasicOpMode_Iterative extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    HardwareRobot robot = new HardwareRobot();
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
-    public void init() {
+    public void init()
+    {
         telemetry.addData("Status", "Initialized");
+        robot.init(hardwareMap);
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
 
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized");
     }
 
     /*
@@ -121,8 +110,13 @@ public class BasicOpMode_Iterative extends OpMode
         // rightPower = -gamepad1.right_stick_y ;
 
         // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+        robot.backLeftMotor.setpower(leftPower);
+        robot.backRightMotor.setpower(rightPower);
+        robot.frontLeftMotor.setpower(leftpower);
+        robot.frontRight.Motor.setpower(rightpower);
+        //ia valoara de pe joystick in timp real si o trimite la motor.
+        // ex 1.0 va fi viteza maxima de mers inainte si-1.0 viteza maxima de mers inapoi
+
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -134,6 +128,12 @@ public class BasicOpMode_Iterative extends OpMode
      */
     @Override
     public void stop() {
+        robot.backLeftMotor.setpower(0);
+        robot.backRightMotor,setpower(0);
+        robot.frontLeftMotor.setpower(0);
+        robot.frontRightMotor.setpower(0);
+        //seteaza viteza la toate motoarele 0 ca sa se asigure ca robotul nu se mai
+        //misca dupa ce programul s-a oprit din rulat.
     }
 
 }
