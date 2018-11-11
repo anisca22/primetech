@@ -36,6 +36,8 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.HardwareRobot;
+
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
  * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
@@ -110,10 +112,10 @@ public class BasicOpMode_Iterative extends OpMode
         // rightPower = -gamepad1.right_stick_y ;
 
         // Send calculated power to wheels
-        robot.backLeftMotor.setpower(leftPower);
-        robot.backRightMotor.setpower(rightPower);
-        robot.frontLeftMotor.setpower(leftpower);
-        robot.frontRight.Motor.setpower(rightpower);
+        robot.backLeftMotor.setPower(leftPower);
+        robot.backRightMotor.setPower(rightPower);
+        robot.frontLeftMotor.setPower(leftPower);
+        robot.frontRightMotor.setPower(rightPower);
         //ia valoara de pe joystick in timp real si o trimite la motor.
         // ex 1.0 va fi viteza maxima de mers inainte si-1.0 viteza maxima de mers inapoi
 
@@ -128,10 +130,10 @@ public class BasicOpMode_Iterative extends OpMode
      */
     @Override
     public void stop() {
-        robot.backLeftMotor.setpower(0);
-        robot.backRightMotor,setpower(0);
-        robot.frontLeftMotor.setpower(0);
-        robot.frontRightMotor.setpower(0);
+        robot.backLeftMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+        robot.frontLeftMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
         //seteaza viteza la toate motoarele 0 ca sa se asigure ca robotul nu se mai
         //misca dupa ce programul s-a oprit din rulat.
     }
