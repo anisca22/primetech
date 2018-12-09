@@ -32,14 +32,20 @@ package org.firstinspires.ftc.teamcode.ActualCode;
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareRobot;
 
-import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_PUTERE;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.ARM_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.COLECTOR_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.INIT_CAPAC;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_CAPAC;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_PUTERE;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_CAPAC;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_PUTERE;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.ROTATOR_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.SLIDER_POWER;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -56,15 +62,18 @@ import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_PUTERE;
  */
 
 @TeleOp(name="Main TeleOP", group="Iterative Opmode")
-//@Disabled
-public class BasicOpMode_Iterative extends OpMode
+@Disabled
+public class Main extends OpMode
 {
     // Declare OpMode members.
+    double armPower = 0;
+    double rotatorPower = 0;
+    double sliderPower = 0;
+    double colectorPower = 0;
+    double capacPosition = INIT_CAPAC;
     private ElapsedTime runtime = new ElapsedTime();
     HardwareRobot robot = new HardwareRobot();
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+
     @Override
     public void init() {
         robot.init(hardwareMap);
@@ -72,24 +81,15 @@ public class BasicOpMode_Iterative extends OpMode
         telemetry.update();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
     @Override
     public void init_loop() {
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
     @Override
     public void start() {
         runtime.reset();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
     @Override
     public void loop() {
         ///CITIRE VARIABILE
@@ -100,12 +100,48 @@ public class BasicOpMode_Iterative extends OpMode
         double leftPower = Range.clip(y + x, MIN_PUTERE, MAX_PUTERE);
         double rightPower = Range.clip(y - x, MIN_PUTERE, MAX_PUTERE);
 
+        if (gamepad1.dpad_up)
+            armPower = ARM_POWER;
+        else if (gamepad1.dpad_down)
+            armPower = -ARM_POWER;
+        else
+            armPower = 0;
+
+        if (gamepad1.dpad_left)
+            sliderPower = SLIDER_POWER;
+        else if (gamepad1.dpad_right)
+            sliderPower = -SLIDER_POWER;
+        else
+            sliderPower = 0;
+
+        if (gamepad1.left_bumper)
+            colectorPower = COLECTOR_POWER;
+        else if (gamepad1.right_bumper)
+            colectorPower = -COLECTOR_POWER;
+        else colectorPower = 0;
+
+        if (gamepad1.a)
+            rotatorPower = ROTATOR_POWER;
+        else if (gamepad1.b)
+            rotatorPower = -ROTATOR_POWER;
+        else rotatorPower = 0;
+
+        if (gamepad1.y)
+            capacPosition = INIT_CAPAC;
+        else if (gamepad1.x)
+            capacPosition = MAX_CAPAC;
         //SETARE PUTERE
         robot.frontLeftMotor.setPower(leftPower);
         robot.backLeftMotor.setPower(leftPower);
         robot.frontRightMotor.setPower(rightPower);
         robot.backRightMotor.setPower(rightPower);
 
+        robot.armMotor.setPower(armPower);
+        robot.sliderMotor.setPower(sliderPower);
+        robot.colectorMotor.setPower(colectorPower);
+        robot.rotatorMotor.setPower(rotatorPower);
+
+        robot.capac.setPosition(capacPosition);
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);

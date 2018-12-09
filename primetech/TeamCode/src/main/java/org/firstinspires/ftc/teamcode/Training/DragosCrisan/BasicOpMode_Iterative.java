@@ -53,7 +53,7 @@ import org.firstinspires.ftc.teamcode.HardwareRobot;
  */
 
 @TeleOp(name="Cum se misca robotul", group="Dragos Crisan")
-//@Disabled
+@Disabled
 public class BasicOpMode_Iterative extends OpMode
 {
     // Declare OpMode members.

@@ -29,11 +29,9 @@
 
 package org.firstinspires.ftc.teamcode;
 
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.OpticalDistanceSensor;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
@@ -55,7 +53,7 @@ import com.qualcomm.robotcore.util.ElapsedTime;
  *   As the arm servo approaches 0, the arm position moves up (away from the floor).
  *   As the claw servo approaches 0, the claw opens up (drops the game element).
  */
-public class HardwareRobot
+public class HardwareTurda
 {
     ///DECLARARE MOTOARE
     public DcMotor  frontLeftMotor;
@@ -64,12 +62,11 @@ public class HardwareRobot
     public DcMotor  backRightMotor;
 
     public DcMotor  armMotor;
-    public DcMotor  sliderMotor;
     public DcMotor  rotatorMotor;
-    public DcMotor  colectorMotor;
+
+    public Servo marker;
 
     ///DECLARARE SERVOURI
-    public Servo    capac;
 
     public final static double MAX_PUTERE = 1.0;
     public final static double MIN_PUTERE = -1.0;
@@ -78,16 +75,19 @@ public class HardwareRobot
     public final static double INIT_CAPAC = 0.5;
     public final static double MIN_CAPAC = 0;
 
-    public final static double ARM_POWER = 0.5;
+    public final static double ARM_POWER = 1;
     public final static double SLIDER_POWER = 0.4;
     public final static double COLECTOR_POWER = 1;
     public final static double ROTATOR_POWER = 0.3;
+
+    public final static double MARKER_START = 1;
+    public final static double MARKER_DOWN = 0.2;
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
     private ElapsedTime period  = new ElapsedTime();
 
     /* Constructor */
-    public HardwareRobot() {}
+    public HardwareTurda() {}
 
     /* Initialize standard Hardware interfaces */
     public void init(HardwareMap ahwMap) {
@@ -101,20 +101,17 @@ public class HardwareRobot
         backRightMotor = hwMap.get(DcMotor.class, "backRightMotor");
 
         armMotor = hwMap.get(DcMotor.class, "armMotor");
-        sliderMotor = hwMap.get(DcMotor.class, "sliderMotor");
         rotatorMotor = hwMap.get(DcMotor.class, "rotatorMotor");
-        colectorMotor = hwMap.get(DcMotor.class, "colectorMotor");
 
+        marker = hwMap.get(Servo.class, "marker");
         // SETARE DIRECTIE
-        frontLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        backLeftMotor.setDirection(DcMotor.Direction.REVERSE);
-        frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
-        backRightMotor.setDirection(DcMotor.Direction.FORWARD);
+        frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        backLeftMotor.setDirection(DcMotor.Direction.FORWARD);
+        frontRightMotor.setDirection(DcMotor.Direction.REVERSE);
+        backRightMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        armMotor.setDirection(DcMotor.Direction.FORWARD);
-        sliderMotor.setDirection(DcMotor.Direction.FORWARD);
+        armMotor.setDirection(DcMotor.Direction.REVERSE);
         rotatorMotor.setDirection(DcMotor.Direction.FORWARD);
-        colectorMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // PUTERE 0
         frontLeftMotor.setPower(0);
@@ -123,13 +120,8 @@ public class HardwareRobot
         backRightMotor.setPower(0);
 
         armMotor.setPower(0);
-        sliderMotor.setPower(0);
         rotatorMotor.setPower(0);
-        colectorMotor.setPower(0);
-
+        marker.setPosition(MARKER_START);
         //DEFINIRE SERVOURI
-        capac = hwMap.get(Servo.class, "capac");
-
-        capac.setPosition(INIT_CAPAC);
     }
 }
