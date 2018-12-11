@@ -27,16 +27,27 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.Training.ExampleFiles.A_TestMotoare;
+package org.firstinspires.ftc.teamcode.ActualCode;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareRobot;
+import org.firstinspires.ftc.teamcode.HardwareTurda;
+
+import static org.firstinspires.ftc.teamcode.HardwareTurda.ARM_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.COLECTOR_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.INIT_CAPAC;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_CAPAC;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_PUTERE;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_PUTERE;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.ROTATOR_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareRobot.SLIDER_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareTurda.MARKER_DOWN;
+import static org.firstinspires.ftc.teamcode.HardwareTurda.MARKER_START;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -52,69 +63,104 @@ import org.firstinspires.ftc.teamcode.HardwareRobot;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Main vladr", group="Vlad Rusu")
+@TeleOp(name="Main Turda", group="Iterative Opmode")
 //@Disabled
-public class BasicOpMode_Iterative extends OpMode
+public class MainTurda extends OpMode
 {
     // Declare OpMode members.
+    double armPower = 0;
+    double rotatorPower = 0;
+    double sliderPower = 0;
+    double colectorPower = 0;
+    double capacPosition = INIT_CAPAC;
+    double markerPOS = MARKER_START;
     private ElapsedTime runtime = new ElapsedTime();
-    HardwareRobot robot=new HardwareRobot();
-    /*
-     * Code to run ONCE when the driver hits INIT
-     */
+    HardwareTurda robot = new HardwareTurda();
+    ColorSensor colorSensor;
+
     @Override
     public void init() {
-        telemetry.addData("Status", "Initialized");
         robot.init(hardwareMap);
-
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
+        telemetry.addData("Status", "Initialized");
+        telemetry.update();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits INIT, but before they hit PLAY
-     */
     @Override
     public void init_loop() {
     }
 
-    /*
-     * Code to run ONCE when the driver hits PLAY
-     */
     @Override
     public void start() {
         runtime.reset();
     }
 
-    /*
-     * Code to run REPEATEDLY after the driver hits PLAY but before they hit STOP
-     */
     @Override
     public void loop() {
-        // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
 
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used.  The default below is POV.
+        telemetry.addData("Clear", colorSensor.alpha());
+        telemetry.addData("Red  ", colorSensor.red());
+        telemetry.addData("Green", colorSensor.green());
+        telemetry.addData("Blue ", colorSensor.blue());
+        telemetry.update();
+        ///CITIRE VARIABILE
+        double y = -gamepad1.left_stick_y; ///FATA SPATE
+        double x  =  -gamepad1.right_stick_x; /// STANGA DREAPTA
 
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
-        leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
-        rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
+        ///CALCULARE PUTERE
+        double leftPower = Range.clip(y + x, MIN_PUTERE, MAX_PUTERE);
+        double rightPower = Range.clip(y - x, MIN_PUTERE, MAX_PUTERE);
 
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-        // leftPower  = -gamepad1.left_stick_y ;
-        // rightPower = -gamepad1.right_stick_y ;
+        if (gamepad1.dpad_up)
+        {
+            if (gamepad1.b)
+                armPower = 0.2;
+            else armPower = ARM_POWER;
+        }
+        else if (gamepad1.dpad_down)
+            armPower = -ARM_POWER;
+        else
+            armPower = 0;
 
-        // Send calculated power to wheels
-        robot.backLeftMotor.setPower(leftPower);
-        robot.backRightMotor.setPower(rightPower);
+        if (gamepad2.x)
+            rotatorPower = ROTATOR_POWER;
+        else if (gamepad2.b)
+            rotatorPower = -ROTATOR_POWER;
+        else if (gamepad2.a)
+            rotatorPower = 0;
+
+        if(gamepad1.x)
+            markerPOS = MARKER_DOWN;
+        else if (gamepad1.y)
+            markerPOS = MARKER_START;
+
+        /**
+        if (gamepad1.dpad_left)
+            sliderPower = SLIDER_POWER;
+        else if (gamepad1.dpad_right)
+            sliderPower = -SLIDER_POWER;
+        else
+            sliderPower = 0;
+         * if (gamepad1.left_bumper)
+         *             colectorPower = COLECTOR_POWER;
+         *         else if (gamepad1.right_bumper)
+         *             colectorPower = -COLECTOR_POWER;
+         *         else colectorPower = 0;
+         *
+
+         */
+
+
+        //SETARE PUTERE
         robot.frontLeftMotor.setPower(leftPower);
+        robot.backLeftMotor.setPower(leftPower);
         robot.frontRightMotor.setPower(rightPower);
+        robot.backRightMotor.setPower(rightPower);
 
+        robot.armMotor.setPower(armPower);
+        robot.rotatorMotor.setPower(rotatorPower);
 
+        robot.marker.setPosition(markerPOS);
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
@@ -125,11 +171,10 @@ public class BasicOpMode_Iterative extends OpMode
      */
     @Override
     public void stop() {
-        robot.backLeftMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
         robot.frontLeftMotor.setPower(0);
+        robot.backLeftMotor.setPower(0);
         robot.frontRightMotor.setPower(0);
-
+        robot.backRightMotor.setPower(0);
     }
 
 }
