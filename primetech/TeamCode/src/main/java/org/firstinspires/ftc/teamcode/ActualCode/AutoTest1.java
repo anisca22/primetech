@@ -180,7 +180,7 @@ public class AutoTest1 extends LinearOpMode {
 
 
         ///COBORARE ROBOT
-        encoderArm(1, 100, 20);
+        encoderArm(1, 170, 10);
         sleep(1000);
         driveBackward(2);
 
