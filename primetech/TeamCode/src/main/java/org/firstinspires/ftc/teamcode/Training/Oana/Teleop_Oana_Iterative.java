@@ -29,19 +29,15 @@
 
 package org.firstinspires.ftc.teamcode.Training.Oana;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareTest;
 
-import static com.qualcomm.robotcore.hardware.DcMotorSimple.Direction.REVERSE;
-import static org.firstinspires.ftc.teamcode.HardwareTest.LOCK_FINISH;
-import static org.firstinspires.ftc.teamcode.HardwareTest.LOCK_START;
+import static org.firstinspires.ftc.teamcode.HardwareTest.LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.HardwareTest.LOCK_OPEN;
 import static org.firstinspires.ftc.teamcode.HardwareTest.MARKER_DOWN;
 import static org.firstinspires.ftc.teamcode.HardwareTest.MARKER_START;
 
@@ -66,8 +62,8 @@ public class Teleop_Oana_Iterative extends OpMode
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     double armPower = 0;
-    double markerPosition = 0;
-    double lockPosition = 0;
+    double markerPosition = MARKER_START;
+    double lockPosition = LOCK_OPEN;
     HardwareTest robot = new HardwareTest();
 
 
@@ -131,24 +127,25 @@ public class Teleop_Oana_Iterative extends OpMode
         //LOCK SERVO
         if (gamepad2.x)
         {
-            lockPosition = LOCK_START;
+            lockPosition = LOCK_OPEN;
         }
 
         if (gamepad2.y)
         {
-            lockPosition = LOCK_FINISH;
+            lockPosition = LOCK_CLOSED;
         }
 
         //RIDICARE BRAT
         if (gamepad2.dpad_up)
         {
-            armPower = 0.5;
+            armPower = 0.8;
         }
-
-        if (gamepad2.dpad_down)
+        else if (gamepad2.dpad_down)
         {
-            armPower = 0;
+            armPower = -0.8;
         }
+        else armPower = 0;
+
 
 
         // PUTERE LA MOTOARE DE DEPLASARE
@@ -184,9 +181,9 @@ public class Teleop_Oana_Iterative extends OpMode
         robot.armMotor.setPower(0);
 
         //SETARE POZITIE SERVOURI DE SFARSIT
-        robot.lockServo.setPosition(LOCK_START);
+        robot.lockServo.setPosition(LOCK_OPEN);
         robot.markerServo.setPosition(MARKER_START);
-        
+
     }
 
 }

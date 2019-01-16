@@ -61,11 +61,13 @@ public class HardwareTest
     public DcMotor  backRightMotor;
 
     public DcMotor  armMotor;
+
+    ///DECLARARE SERVOURI
     public Servo markerServo;
     public Servo lockServo;
 
 
-    ///DECLARARE SERVOURI
+
 
     public final static double MAX_PUTERE = 1.0;
     public final static double MIN_PUTERE = -1.0;
@@ -80,10 +82,10 @@ public class HardwareTest
     public final static double ROTATOR_POWER = 0.3;
 
     public final static double MARKER_START = 1;
-    public final static double MARKER_DOWN = 0.2;
+    public final static double MARKER_DOWN = 0.6;
 
-    public final static double LOCK_START = 1;
-    public final static double LOCK_FINISH = 0.5;
+    public final static double LOCK_OPEN = 0.2;
+    public final static double LOCK_CLOSED = 0;
 
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
@@ -126,7 +128,7 @@ public class HardwareTest
         armMotor.setPower(0);
 
         // SETARE POZITIE SERVO
-        lockServo.setPosition(LOCK_START);
+        lockServo.setPosition(LOCK_OPEN);
         markerServo.setPosition(MARKER_START);
 
     }
