@@ -101,7 +101,7 @@ public class HardwareDemoCluj
 
         //DEFINIRE SERVOURI
         lockServo = hwMap.get (Servo.class, "lock");
-        markerServo = hwMap.get(Servo.class, "marker");
+        markerServo = hwMap.get (Servo.class, "marker");
 
         // SETARE DIRECTIE
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
