@@ -78,6 +78,7 @@ public class HardwareDemoCluj
     public final static double LOCK_CLOSED = 0;
 
     public static final double     TURN_SPEED            = 0.2;
+    public static final double     DRIVE_SPEED            = 0.2;
     public static final double      HEADING_THRESHOLD       = 10;
     public static final double     P_TURN_COEFF            = 0.1;
     public static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder 1440 tetrix
@@ -128,7 +129,7 @@ public class HardwareDemoCluj
         armMotor.setPower(0);
 
         // SETARE POZITIE SERVO
-        lockServo.setPosition(LOCK_OPEN);
+        lockServo.setPosition(LOCK_CLOSED);
         markerServo.setPosition(MARKER_START);
 
     }
