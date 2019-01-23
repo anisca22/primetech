@@ -111,9 +111,20 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 stopItDude();
                 lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
-                encoderArm(1, 120, 1, 15);
+                encoderArm(1, 140, 1, 15);
                 lockPosition = LOCK_CLOSED;
                 robot.lockServo.setPosition(LOCK_CLOSED);
+            }
+
+            if (gamepad1.dpad_down && gamepad1.b)
+            {
+                stopItDude();
+                encoderArm(1, 20, 1, 15);
+                lockPosition = LOCK_OPEN;
+                robot.lockServo.setPosition(LOCK_OPEN);
+                sleep(2000);
+                //lockPosition = LOCK_CLOSED;
+                //robot.lockServo.setPosition(LOCK_CLOSED);
             }
 
 
@@ -214,7 +225,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
 
-            sleep(250);   // optional pause after each move
+            //sleep(250);   // optional pause after each move
         }
     }
 }
