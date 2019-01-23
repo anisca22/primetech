@@ -29,6 +29,8 @@
 
 package org.firstinspires.ftc.teamcode.Training.Oana;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
@@ -38,12 +40,20 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
+import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
+import org.firstinspires.ftc.robotcore.external.navigation.Position;
+import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 
 import java.util.List;
+import java.util.Locale;
 
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_INCH;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
@@ -86,6 +96,10 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
     HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
     ModernRoboticsI2cGyro   gyro    = null;
 
+    BNO055IMU imu;
+    Orientation angles;
+    Acceleration gravity;
+
     private ElapsedTime     runtime = new ElapsedTime();
 
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
@@ -120,6 +134,18 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
 
         /***INIT***/
         robot.init(hardwareMap);
+
+        //IMU
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
+
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
         /***VUFORIA***/
         initVuforia();
@@ -162,7 +188,11 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
 
         gyro.resetZAxisIntegrator();
 
+        /** START**/
+
         waitForStart();
+
+        imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
         if (tfod != null) {
             tfod.activate();
@@ -172,6 +202,19 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         /***    AUTONOMUS STARTS HERE                           ***/
         /***                AUTONOMUS STARTS HERE               ***/
         /***                            AUTONOMUS STARTS HERE   ***/
+
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+
+        sleep(1000);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        double roll = noformatAngle(angles.angleUnit, angles.secondAngle);
+
+        telemetry.addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
+        telemetry.addData("roll", formatAngle(angles.angleUnit, angles.secondAngle));
+        telemetry.addData("heading2", heading);
+        telemetry.addData("roll2", roll);
+        telemetry.update();
+
 
         encoderArm(1, 120, -1, 30);
         sleep(1000);
@@ -418,211 +461,8 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         }
     }
 
-    public void gyroDrive ( double speed,
-                            double distance,
-                            double angle) {
-
-        //int     newLeftTarget;
-        //int     newRightTarget;
-
-        int     newBackLeftTarget;
-        int     newBackRightTarget;
-        int     newFrontLeftTarget;
-        int     newFrontRightTarget;
-
-        int     moveCounts;
-        double  max;
-        double  error;
-        double  steer;
-        double  leftSpeed;
-        double  rightSpeed;
-
-        // Ensure that the opmode is still active
-        if (opModeIsActive()) {
-
-            // Determine new target position, and pass to motor controller
-            moveCounts = (int)(distance * COUNTS_PER_INCH);
-
-            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + moveCounts;
-            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + moveCounts;
-            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + moveCounts;
-            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + moveCounts;
-
-            //newLeftTarget = robot.leftDrive.getCurrentPosition() + moveCounts;
-            //newRightTarget = robot.rightDrive.getCurrentPosition() + moveCounts;
-
-            robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
-            robot.backRightMotor.setTargetPosition(newBackRightTarget);
-            robot.frontLeftMotor.setTargetPosition(newFrontLeftTarget);
-            robot.frontRightMotor.setTargetPosition(newFrontRightTarget);
-
-            // Set Target and Turn On RUN_TO_POSITION
-            ///robot.leftDrive.setTargetPosition(newLeftTarget);
-            ///robot.rightDrive.setTargetPosition(newRightTarget);
 
 
-            robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            ///robot.leftDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-            ///robot.rightDrive.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-
-            // start motion.
-            speed = Range.clip(Math.abs(speed), 0.0, 1.0);
-            robot.backLeftMotor.setPower(Math.abs(speed));
-            robot.backRightMotor.setPower(Math.abs(speed));
-            robot.frontLeftMotor.setPower(Math.abs(speed));
-            robot.frontRightMotor.setPower(Math.abs(speed));
-
-            // keep looping while we are still active, and BOTH motors are running.
-            while (opModeIsActive() &&
-                    (
-                            robot.backLeftMotor.isBusy() && robot.backRightMotor.isBusy() &&
-                                    robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()
-                    )) {
-
-                // adjust relative speed based on heading error.
-                error = getError(angle);
-                steer = getSteer(error, P_DRIVE_COEFF);
-
-                // if driving in reverse, the motor correction also needs to be reversed
-                if (distance < 0)
-                    steer *= -1.0;
-
-                leftSpeed = speed - steer;
-                rightSpeed = speed + steer;
-
-                // Normalize speeds if either one exceeds +/- 1.0;
-                max = Math.max(Math.abs(leftSpeed), Math.abs(rightSpeed));
-                if (max > 1.0)
-                {
-                    leftSpeed /= max;
-                    rightSpeed /= max;
-                }
-
-                robot.backLeftMotor.setPower(leftSpeed);
-                robot.backRightMotor.setPower(rightSpeed);
-                robot.frontLeftMotor.setPower(leftSpeed);
-                robot.frontRightMotor.setPower(rightSpeed);
-
-                //robot.leftDrive.setPower(leftSpeed);
-                //robot.rightDrive.setPower(rightSpeed);
-
-                // Display drive status for the driver.
-                telemetry.addData("Err/St",  "%5.1f/%5.1f",  error, steer);
-                telemetry.addData("Target",  "%7d:%7d:%7d:%7d",
-                        newFrontLeftTarget,  newFrontRightTarget,
-                        newBackLeftTarget, newBackRightTarget
-                );
-                telemetry.addData("Actual",  "%7d:%7d:%7d:%7d",
-                        robot.frontLeftMotor.getCurrentPosition(),
-                        robot.frontRightMotor.getCurrentPosition()
-                        ,
-                        robot.backLeftMotor.getCurrentPosition(),
-                        robot.backRightMotor.getCurrentPosition()
-                );
-                telemetry.addData("Speed",   "%5.2f:%5.2f",  leftSpeed, rightSpeed);
-                telemetry.update();
-            }
-
-            // Stop all motion;
-            robot.backLeftMotor.setPower(0);
-            robot.backRightMotor.setPower(0);
-            robot.frontLeftMotor.setPower(0);
-            robot.frontRightMotor.setPower(0);
-
-            // Turn off RUN_TO_POSITION
-            robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        }
-    }
-
-    public void gyroTurn (double speed, double angle) {
-
-        // keep looping while we are still active, and not on heading.
-        while (opModeIsActive() && !onHeading(speed, angle, P_TURN_COEFF)) {
-            telemetry.addData("UUUU", gyro.getIntegratedZValue());
-            // Update telemetry & Allow time for other processes to run.
-            telemetry.update();
-        }
-    }
-
-    public void gyroHold( double speed, double angle, double holdTime) {
-
-        ElapsedTime holdTimer = new ElapsedTime();
-
-        // keep looping while we have time remaining.
-        holdTimer.reset();
-        while (opModeIsActive() && (holdTimer.time() < holdTime)) {
-            // Update telemetry & Allow time for other processes to run.
-            onHeading(speed, angle, P_TURN_COEFF);
-            telemetry.update();
-        }
-
-        // Stop all motion;
-        robot.backLeftMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
-        robot.frontLeftMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
-    }
-
-    boolean onHeading(double speed, double angle, double PCoeff) {
-        double   error ;
-        double   steer ;
-        boolean  onTarget = false ;
-        double leftSpeed;
-        double rightSpeed;
-
-        // determine turn power based on +/- error
-        error = getError(angle);
-
-        telemetry.addData("UNGHI", angle);
-        telemetry.update();
-        if (Math.abs(error) <= HEADING_THRESHOLD) {
-            steer = 0.0;
-            leftSpeed  = 0.0;
-            rightSpeed = 0.0;
-            onTarget = true;
-        }
-        else {
-            steer = getSteer(error, PCoeff);
-            rightSpeed  = speed * steer;
-            leftSpeed   = -rightSpeed;
-        }
-
-
-        // Send desired speeds to motors.
-        robot.backLeftMotor.setPower(leftSpeed);
-        robot.backRightMotor.setPower(rightSpeed);
-        robot.frontLeftMotor.setPower(leftSpeed);
-        robot.frontRightMotor.setPower(rightSpeed);
-
-        // Display it for the driver.
-        telemetry.addData("Target", "%5.2f", angle);
-        telemetry.addData("Err/St", "%5.2f/%5.2f", error, steer);
-        telemetry.addData("Speed.", "%5.2f:%5.2f", leftSpeed, rightSpeed);
-
-        return onTarget;
-    }
-
-    public double getError(double targetAngle) {
-
-        double robotError;
-
-        // calculate error in -179 to +180 range  (
-        robotError = targetAngle - gyro.getIntegratedZValue();
-        while (robotError > 180)  robotError -= 360;
-        while (robotError <= -180) robotError += 360;
-        return robotError;
-    }
-
-    public double getSteer(double error, double PCoeff) {
-        return Range.clip(error * PCoeff, -1, 1);
-    }
 
     private void initVuforia() {
         /*
@@ -648,27 +488,38 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
 
     private void rotateLeft (double angle) {
         double actualAngle = gyro.getHeading();
-        gyroTurn(TURN_SPEED, actualAngle + angle);
+        ///gyroTurn(TURN_SPEED, actualAngle + angle);
     }
 
     private void rotateRight (double angle) {
         double actualAngle = gyro.getHeading();
-        gyroTurn(-TURN_SPEED, actualAngle - angle);
+        ///gyroTurn(-TURN_SPEED, actualAngle - angle);
     }
 
     private void driveBackward (double distance) {
         double actualAngle = gyro.getIntegratedZValue();
-        gyroDrive(DRIVE_SPEED, -distance, actualAngle);
+        //gyroDrive(DRIVE_SPEED, -distance, actualAngle);
     }
 
     private void driveForward (double distance) {
         double actualAngle = gyro.getIntegratedZValue();
-        gyroDrive(DRIVE_SPEED, distance, actualAngle);
+        //gyroDrive(DRIVE_SPEED, distance, actualAngle);
     }
 
-    private void lowerRobot (double distance) {
-        double actualAngle = gyro.getIntegratedZValue();
-        gyroDrive(DRIVE_SPEED, distance, actualAngle);
+    String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees) {
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
+    double noformatAngle(AngleUnit angleUnit, double angle) {
+        return noFormatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    double noFormatDegrees(double degrees) {
+        return AngleUnit.DEGREES.normalize(degrees);
     }
 
 }

@@ -27,16 +27,15 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.robotcontroller.external.samples;
+package org.firstinspires.ftc.teamcode.ActualCode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.robotcore.external.Func;
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
@@ -44,11 +43,13 @@ import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
 import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 import org.firstinspires.ftc.robotcore.external.navigation.Position;
 import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
+import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 
 import java.util.Locale;
 
-import static org.firstinspires.ftc.robotcontroller.external.samples.PushbotAutoDriveByGyro_Linear.HEADING_THRESHOLD;
-import static org.firstinspires.ftc.robotcontroller.external.samples.PushbotAutoDriveByGyro_Linear.P_TURN_COEFF;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.HEADING_THRESHOLD;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.P_TURN_COEFF;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
 
 /**
  * {@link SensorBNO055IMU} gives a short demo on how to use the BNO055 Inertial Motion Unit (IMU) from AdaFruit.
@@ -58,15 +59,16 @@ import static org.firstinspires.ftc.robotcontroller.external.samples.PushbotAuto
  *
  * @see <a href="http://www.adafruit.com/products/2472">Adafruit IMU</a>
  */
-@TeleOp(name = "Sensor: BNO055 IMU", group = "Sensor")
+@TeleOp(name = "Sensor: BNO055 IMU Test", group = "Sensor")
 //@Disabled                            // Comment this out to add to the opmode list
-public class SensorBNO055IMU extends LinearOpMode {
+public class SensorBNO055IMU extends LinearOpMode  {
     //----------------------------------------------------------------------------------------------
     // State
     //----------------------------------------------------------------------------------------------
 
     // The IMU sensor object
     BNO055IMU imu;
+    HardwareDemoCluj robot = new HardwareDemoCluj();
     // State used for updating telemetry
     Orientation angles;
     Acceleration gravity;
@@ -78,6 +80,7 @@ public class SensorBNO055IMU extends LinearOpMode {
     @Override
     public void runOpMode() {
 
+        robot.init(hardwareMap);
         // Set up the parameters with which we will use our IMU. Note that integration
         // algorithm here just reports accelerations to the logcat log; it doesn't actually
         // provide positional information.
@@ -104,7 +107,7 @@ public class SensorBNO055IMU extends LinearOpMode {
         while (opModeIsActive()) {
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-            sleep(1000);
+            //sleep(1000);
             double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
             double roll = noformatAngle(angles.angleUnit, angles.secondAngle);
 
@@ -114,27 +117,79 @@ public class SensorBNO055IMU extends LinearOpMode {
             telemetry.addData("roll2", roll);
             telemetry.update();
 
+            if (gamepad1.a)rotateLeft(45);
+            else if (gamepad1.b)rotateRight(45);
         }
     }
-/**
-    private void rotateLeft (double angle, double heading) {
-        gyroTurn(0.5, heading + angle);
+
+    private void rotation(double target)
+    {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+
+        while ((Math.abs(heading - target) > 3) && opModeIsActive())
+        {
+            if (heading > target)
+            {
+                robot.backLeftMotor.setPower(-TURN_SPEED);
+                robot.frontLeftMotor.setPower(-TURN_SPEED);
+                robot.backRightMotor.setPower(TURN_SPEED);
+                robot.frontRightMotor.setPower(TURN_SPEED);
+            }
+            else if (heading < target)
+            {
+                robot.backLeftMotor.setPower(TURN_SPEED);
+                robot.frontLeftMotor.setPower(TURN_SPEED);
+                robot.backRightMotor.setPower(-TURN_SPEED);
+                robot.frontRightMotor.setPower(-TURN_SPEED);
+            }
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+            telemetry.addData("Heading", heading);
+            telemetry.addData("NewDir", target);
+            telemetry.update();
+            sleep(1);
+        }
+        robot.backLeftMotor.setPower(0);
+        robot.frontLeftMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
+
     }
 
-    private void rotateRight (double angle, double heading) {
-        gyroTurn(-0.5, heading - angle);
+    private void rotateLeft (double angle) {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        telemetry.addData("Heading", heading);
+        telemetry.addData("NewDir", heading - angle);
+        telemetry.update();
+        sleep(1000);
+        rotation(heading + angle);
     }
 
+    private void rotateRight (double angle){
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        telemetry.addData("Heading", heading);
+        telemetry.addData("NewDir", heading - angle);
+        telemetry.update();
+        sleep(1000);
+        rotation(heading - angle);
+    }
+
+    /*
     public void gyroTurn (double speed, double angle) {
 
         // keep looping while we are still active, and not on heading.
         while (opModeIsActive() && !onHeading(speed, angle, P_TURN_COEFF)) {
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
-            telemetry.addData("UUUU", heading);
+            ///telemetry.addData("UUUU", heading);
             // Update telemetry & Allow time for other processes to run.
-            telemetry.update();
+            ///telemetry.update();
         }
     }
+
 
     boolean onHeading(double speed, double angle, double PCoeff) {
         double   error ;
@@ -142,20 +197,32 @@ public class SensorBNO055IMU extends LinearOpMode {
         boolean  onTarget = false ;
         double leftSpeed;
         double rightSpeed;
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        error = angle - heading;
 
-        // determine turn power based on +/- error
-        error = getError(angle);
-
+        telemetry.addData("Heading", heading);
         telemetry.addData("UNGHI", angle);
+        telemetry.addData("Error", Math.abs(error));
+        telemetry.addData("Headingth", HEADING_THRESHOLD);
         telemetry.update();
+        //sleep(500);
+
         if (Math.abs(error) <= HEADING_THRESHOLD) {
             steer = 0.0;
             leftSpeed  = 0.0;
             rightSpeed = 0.0;
             onTarget = true;
         }
-        else {
-            steer = getSteer(error, PCoeff);
+        else if (error < 0)
+        {
+            steer = Range.clip(error * 0.1, -1, 1);
+            rightSpeed  = speed * steer;
+            leftSpeed   = -rightSpeed;
+        }
+        else
+        {
+            steer = Range.clip(error * 0.1, -1, 1);
             rightSpeed  = speed * steer;
             leftSpeed   = -rightSpeed;
         }
@@ -167,29 +234,19 @@ public class SensorBNO055IMU extends LinearOpMode {
         robot.frontRightMotor.setPower(rightSpeed);
 
         // Display it for the driver.
+
         telemetry.addData("Target", "%5.2f", angle);
         telemetry.addData("Err/St", "%5.2f/%5.2f", error, steer);
         telemetry.addData("Speed.", "%5.2f:%5.2f", leftSpeed, rightSpeed);
 
         return onTarget;
     }
-
-    public double getError(double targetAngle) {
-
-        double robotError;
-
-        // calculate error in -179 to +180 range  (
-        robotError = targetAngle - gyro.getIntegratedZValue();
-        while (robotError > 180)  robotError -= 360;
-        while (robotError <= -180) robotError += 360;
-        return robotError;
-    }
+    */
 
     public double getSteer(double error, double PCoeff) {
         return Range.clip(error * PCoeff, -1, 1);
     }
 
-*/
     String formatAngle(AngleUnit angleUnit, double angle) {
         return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
     }

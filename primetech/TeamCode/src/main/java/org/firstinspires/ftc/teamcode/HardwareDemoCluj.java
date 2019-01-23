@@ -29,10 +29,15 @@
 
 package org.firstinspires.ftc.teamcode;
 
+import com.qualcomm.hardware.bosch.BNO055IMU;
+import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
+
+import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
+import org.firstinspires.ftc.robotcore.external.navigation.Orientation;
 
 /**
  * This is NOT an opmode.
@@ -66,13 +71,15 @@ public class HardwareDemoCluj
     public Servo markerServo;
     public Servo lockServo;
 
-
     public final static double MARKER_START = 1;
     public final static double MARKER_RELEASED = 0.6;
 
     public final static double LOCK_OPEN = 0.2;
     public final static double LOCK_CLOSED = 0;
 
+    public static final double     TURN_SPEED            = 0.2;
+    public static final double      HEADING_THRESHOLD       = 10;
+    public static final double     P_TURN_COEFF            = 0.1;
     public static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder 1440 tetrix
     public static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
     public static final double     WHEEL_DIAMETER_CM   = 4.0 * 2.54 ;     // For figuring circumference
@@ -90,6 +97,7 @@ public class HardwareDemoCluj
     public void init(HardwareMap ahwMap) {
         // save reference to HW Map
         hwMap = ahwMap;
+
 
         // DEFINIRE MOTOARE
         frontLeftMotor = hwMap.get(DcMotor.class, "frontLeftMotor");
