@@ -59,15 +59,15 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Linear OpMode", group="Linear Opmode")
-@Disabled
+@TeleOp(name="Cluj_Linear", group="Linear Opmode")
+//@Disabled
 public class Main_Demo_Cluj_Linear extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     double armPower = 0;
     double markerPosition = MARKER_START;
-    double lockPosition = LOCK_OPEN;
+    double lockPosition = LOCK_CLOSED;
     double leftPower = 0;
     double rightPower = 0;
     HardwareDemoCluj robot = new HardwareDemoCluj();
@@ -101,8 +101,18 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             if (gamepad1.dpad_up && gamepad1.a)
             {
                 stopItDude();
+                lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
-                encoderArm(1, 170, -1, 15);
+                encoderArm(1, 120, -1, 15);
+            }
+
+            if (gamepad1.dpad_down && gamepad1.a)
+            {
+                stopItDude();
+                lockPosition = LOCK_OPEN;
+                robot.lockServo.setPosition(LOCK_OPEN);
+                encoderArm(1, 120, 1, 15);
+                lockPosition = LOCK_CLOSED;
                 robot.lockServo.setPosition(LOCK_CLOSED);
             }
 
@@ -171,6 +181,8 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
         else if (direction == 1)
             robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
         // Ensure that the opmode is still active
+        robot.armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller

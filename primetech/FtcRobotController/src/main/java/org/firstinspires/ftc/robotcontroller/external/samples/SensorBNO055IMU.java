@@ -55,7 +55,7 @@ import java.util.Locale;
  * @see <a href="http://www.adafruit.com/products/2472">Adafruit IMU</a>
  */
 @TeleOp(name = "Sensor: BNO055 IMU", group = "Sensor")
-@Disabled                            // Comment this out to add to the opmode list
+//@Disabled                            // Comment this out to add to the opmode list
 public class SensorBNO055IMU extends LinearOpMode
     {
     //----------------------------------------------------------------------------------------------
@@ -93,7 +93,7 @@ public class SensorBNO055IMU extends LinearOpMode
         imu.initialize(parameters);
 
         // Set up our telemetry dashboard
-        composeTelemetry();
+        //composeTelemetry();
 
         // Wait until we're told to go
         waitForStart();
@@ -103,7 +103,18 @@ public class SensorBNO055IMU extends LinearOpMode
 
         // Loop and update the dashboard
         while (opModeIsActive()) {
+            angles   = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            telemetry.addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
+            telemetry.addData("roll", formatAngle(angles.angleUnit, angles.secondAngle));
             telemetry.update();
+            sleep(1000);
+            double heading = strToDouble(formatAngle(angles.angleUnit, angles.secondAngle));
+            telemetry.addData("heading double", heading);
+            telemetry.update();
+            sleep(1000);
+            //telemetry.update();
+
+
         }
     }
 
@@ -180,5 +191,59 @@ public class SensorBNO055IMU extends LinearOpMode
 
     String formatDegrees(double degrees){
         return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
+     double strToDouble( String str )
+     {
+         telemetry.addData("String", str);
+         telemetry.update();
+         sleep(1000);
+        int i = 0;
+        double num = 0;
+        double num2 = 0;
+        int cnt = 1;
+        boolean isNeg = false;
+
+        //Check for negative sign; if it's there, set the isNeg flag
+        if (str.charAt(0) == '-') {
+            isNeg = true;
+            i = 1;
+        }
+
+
+        int ok = 1;
+        //Process each character of the string;
+        while( i < str.length()) {
+            telemetry.addData("i", i);
+            telemetry.addData("caracter", str.charAt(i));
+            telemetry.update();
+            sleep(1000);
+            if (str.charAt(i) == ',')
+                ok = -1;
+            else if (ok == 1)
+            {
+                num *= 10;
+                num += str.charAt(i) - '0'; //Minus the ASCII code of '0' to get the value of the charAt(i++).
+            }
+            else {
+                num2 *= 10;
+                num2 += str.charAt(i) - '0';
+                cnt *= 10;
+            }
+            i++;
+        }
+
+
+        num2 /= cnt;
+        num += num2;
+
+         telemetry.addData("LG", str.length());
+         telemetry.addData("num2", num2);
+         telemetry.addData("num", num);
+         telemetry.update();
+        sleep(1000);
+        if (isNeg)
+            num = -num;
+        return num;
     }
 }

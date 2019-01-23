@@ -45,6 +45,7 @@ import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 
 import java.util.List;
 
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_INCH;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
@@ -84,7 +85,6 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
     /* Declare OpMode members. */
     HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
     ModernRoboticsI2cGyro   gyro    = null;
-    ColorSensor sensorRGB;
 
     private ElapsedTime     runtime = new ElapsedTime();
 
@@ -143,8 +143,6 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
             idle();
         }
 
-        /***COLOR SENSOR***/
-        sensorRGB = hardwareMap.colorSensor.get("sensor_color");
 
         /***ENCODERS***/
         robot.backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -175,14 +173,7 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         /***                AUTONOMUS STARTS HERE               ***/
         /***                            AUTONOMUS STARTS HERE   ***/
 
-
-
-        //lowerRobot(50);
-        //sleep(1000);
-
-        ///COBORARE ROBOT
-
-        encoderArm(0.5, 170, 30);
+        encoderArm(1, 120, -1, 30);
         sleep(1000);
 
         ///ALINIERE ROBOT
@@ -236,87 +227,6 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         robot.markerServo.setPosition(MARKER_START);
         sleep(1000);
 
-
-
-        /*
-        rotateLeft(90);
-        rotateRight(90);
-
-        encoderArm(1, 100, 20);
-        sleep(1000);
-        driveBackward(2);
-
-        //ROTIRE PT DAT JOS DE PE LANDER
-        rotateLeft(60);
-        sleep(1000);
-        driveForward(10);
-        rotateRight(90);
-        driveForward(10);
-        rotateLeft(30);
-        ///AICI II ALINIAT ROBOTUL
-
-        ///SE UITA DREAPTA
-        rotateRight(45);
-        if(checkTensorFlow(2000) == true)
-        {
-            sleep(1000);
-            driveForward(54);
-            driveBackward(54);
-        }
-        else
-        {
-            sleep(1000);
-            ///SE UITA FATA
-            rotateLeft(45);
-            if(checkTensorFlow(2000) == true)
-            {
-                sleep(1000);
-                driveForward(43);
-                driveBackward(43);
-            }
-            else
-            {
-                sleep(1000);
-                ///SE UITA STANGA
-                rotateLeft(45);
-                if(checkTensorFlow(2000) == true)
-                {
-                    driveForward(54);
-                    driveBackward(54);
-                }
-            }
-        }
-        sleep(1000);
-
-        rotateLeft(90);
-        driveForward(104);
-        rotateLeft(45);
-        driveForward(127);
-        ///PUNE TEAM MARKER-UL AICI
-        
-        /**
-        if (isGold == true)
-            telemetry.addData("Found Gold","YES");
-        else
-            telemetry.addData("Found Gold","NO");
-        telemetry.update();
-         */
-        sleep(1000);
-
-
-        /**
-        telemetry.addData("Clear", sensorRGB.alpha());
-        telemetry.addData("Red  ", sensorRGB.red());
-        telemetry.addData("Green", sensorRGB.green());
-        telemetry.addData("Blue ", sensorRGB.blue());
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-         */
-
-
-        /***    AUTONOMUS ENDS HERE                           ***/
-        /***                AUTONOMUS ENDS HERE               ***/
-        /***                            AUTONOMUS ENDS HERE   ***/
     }
 
 
@@ -384,13 +294,17 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
     }
 
 
-    public void encoderArm(double speed, double distance, double timeoutS) {
+    public void encoderArm(double speed, double distance, double direction, double timeoutS) {
         int armTarget;
-        // Ensure that the opmode is still active
-        if (opModeIsActive()) {
 
-            ///DESCHIDERE LOCK
-            robot.lockServo.setPosition(LOCK_OPEN);
+        if (direction == -1)
+            robot.armMotor.setDirection(DcMotor.Direction.REVERSE);
+        else if (direction == 1)
+            robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
+        // Ensure that the opmode is still active
+        robot.armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
             armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
@@ -404,7 +318,8 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
             runtime.reset();
             robot.armMotor.setPower(Math.abs(speed));
 
-            while (opModeIsActive() && (runtime.seconds() < timeoutS) && (robot.armMotor.isBusy()))
+            while (opModeIsActive() && (runtime.seconds() < timeoutS) && (robot.armMotor.isBusy())
+                    && !isStopRequested() && !(gamepad1.a && gamepad1.b))
             {
 
                 // Display it for the driver.
@@ -418,9 +333,7 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
 
             // Turn off RUN_TO_POSITION
             robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-
-            ///INCHIDERE LOCK
-            robot.lockServo.setPosition(LOCK_CLOSED);
+            robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
 
             sleep(250);   // optional pause after each move
         }
@@ -628,7 +541,7 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         }
     }
 
-    public void gyroTurn (  double speed, double angle) {
+    public void gyroTurn (double speed, double angle) {
 
         // keep looping while we are still active, and not on heading.
         while (opModeIsActive() && !onHeading(speed, angle, P_TURN_COEFF)) {
@@ -734,13 +647,13 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
     }
 
     private void rotateLeft (double angle) {
-        double actualAngle = gyro.getIntegratedZValue();
-        gyroTurn(TURN_SPEED, actualAngle + (360 - angle));
+        double actualAngle = gyro.getHeading();
+        gyroTurn(TURN_SPEED, actualAngle + angle);
     }
 
     private void rotateRight (double angle) {
-        double actualAngle = gyro.getIntegratedZValue();
-        gyroTurn(-TURN_SPEED, actualAngle + angle);
+        double actualAngle = gyro.getHeading();
+        gyroTurn(-TURN_SPEED, actualAngle - angle);
     }
 
     private void driveBackward (double distance) {

@@ -85,7 +85,6 @@ public class AUTO_OANA extends LinearOpMode {
     /* Declare OpMode members. */
     HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
     ModernRoboticsI2cGyro   gyro    = null;
-    ColorSensor sensorRGB;
 
     private ElapsedTime     runtime = new ElapsedTime();
 
@@ -144,8 +143,6 @@ public class AUTO_OANA extends LinearOpMode {
             idle();
         }
 
-        /***COLOR SENSOR***/
-        sensorRGB = hardwareMap.colorSensor.get("sensor_color");
 
         /***ENCODERS***/
         robot.backLeftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
