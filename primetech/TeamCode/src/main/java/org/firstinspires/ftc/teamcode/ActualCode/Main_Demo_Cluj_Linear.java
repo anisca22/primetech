@@ -96,7 +96,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             else if (gamepad1.y)
                 lockPosition = LOCK_CLOSED;
 
-
+/*
             //RIDICARE BRAT AUTOMAT
             if (gamepad1.dpad_up && gamepad1.a)
             {
@@ -116,14 +116,16 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 lockPosition = LOCK_CLOSED;
                 robot.lockServo.setPosition(LOCK_CLOSED);
             }
-
+*/
             if (gamepad1.dpad_down && gamepad1.b)
             {
                 stopItDude();
                 encoderArm(1, 15, 1, 15);
                 lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
+                encoderArm(1, 15, 1, 15);
                 sleep(2000);
+                //sleep(2000);
                 //lockPosition = LOCK_CLOSED;
                 //robot.lockServo.setPosition(LOCK_CLOSED);
             }
@@ -138,11 +140,20 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 markerPosition = MARKER_START;
 
             //RIDICARE BRAT MANUAL
-            if (gamepad2.dpad_up)
-                armPower = 0.8;
+            if (gamepad1.dpad_up)
+                armPower = 1;
+            else if (gamepad1.dpad_down)
+                armPower = -1;
+            else if (!(gamepad1.dpad_up ||gamepad1.dpad_down))
+                armPower = 0;
+
+            else if (gamepad2.dpad_up)
+                armPower = 0.6;
             else if (gamepad2.dpad_down)
-                armPower = -0.8;
+                armPower = -0.6;
             else armPower = 0;
+
+            robot.armMotor.setPower(armPower);
 
             //CALCULARE PUTERE
             leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
@@ -155,7 +166,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             robot.frontRightMotor.setPower(rightPower);
 
             // PUTERE LA MOTORUL PENTRU BRAT
-            robot.armMotor.setPower(armPower);
+
 
             //POZITIONARE SERVOURI
             robot.markerServo.setPosition(markerPosition);
