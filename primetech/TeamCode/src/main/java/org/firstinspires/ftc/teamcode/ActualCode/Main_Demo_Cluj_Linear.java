@@ -87,8 +87,8 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             /**GAMEPAD 1**/
 
             //DRIVE
-            double drive = -gamepad1.left_stick_y; //FATA SPATE
-            double turn  =  -gamepad1.right_stick_x;  //STANGA DREAPTA
+            double drive = -gamepad1.left_stick_y/2; //FATA SPATE
+            double turn  =  -gamepad1.right_stick_x/2;  //STANGA DREAPTA
 
             //LOCK SERVO
             if (gamepad1.x)
@@ -111,7 +111,8 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 stopItDude();
                 lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
-                encoderArm(1, 140, 1, 15);
+                encoderArm(1, 130, 1, 15);
+                //encoderArm(0.8, 20, 1, 15);
                 lockPosition = LOCK_CLOSED;
                 robot.lockServo.setPosition(LOCK_CLOSED);
             }
@@ -119,7 +120,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             if (gamepad1.dpad_down && gamepad1.b)
             {
                 stopItDude();
-                encoderArm(1, 20, 1, 15);
+                encoderArm(1, 15, 1, 15);
                 lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
                 sleep(2000);
