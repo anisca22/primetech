@@ -201,7 +201,7 @@ public class Auto_Ana_Crater extends LinearOpMode {
 
         telemetry.addData("Direction", gyroDirection);
         telemetry.update();
-        sleep(500);
+        sleep(1000);
 
         robot.armMotor.setPower(0);
         telemetry.addData("Direction", gyroDirection);
@@ -211,38 +211,43 @@ public class Auto_Ana_Crater extends LinearOpMode {
         {
             telemetry.addData("MINERAL:", "left");
             telemetry.update();
-            driveBackward(129, DRIVE_SPEED);
+            driveBackward(21, DRIVE_SPEED);
             sleep(200);
-            driveForward(65, DRIVE_SPEED);
+            driveForward(5, DRIVE_SPEED);
             rotateLeft(65,gyroDirection);
+
+            driveBackward(16, 0.5);
+            rotateLeft(42, gyroDirection);
+            driveBackward(50, 0.5);
+            rotateLeft(45,gyroDirection);
+            sleep(200);
+            robot.markerServo.setPosition(LOCK_OPEN);
+            idle();
+
         }
         else {
             rotateRight(40, gyroDirection);
-            driveBackward(19, DRIVE_SPEED);
+            driveBackward(3, DRIVE_SPEED);
             if (checkTensorFlow(1000) == true)
             {
                 telemetry.addData("MINERAL:", "center");
                 telemetry.update();
-                driveBackward(129, DRIVE_SPEED);
+                driveBackward(20, DRIVE_SPEED);
                 sleep(200);
-                driveForward(65, DRIVE_SPEED);
+                driveForward(10, DRIVE_SPEED);
                 rotateLeft(115,gyroDirection);
             }
             else {
                 rotateRight(45, gyroDirection);
                 telemetry.addData("MINERAL:", "right");
                 telemetry.update();
-                driveBackward(129, DRIVE_SPEED);
+                driveBackward(20, DRIVE_SPEED);
                 sleep(200);
-                driveForward(65, DRIVE_SPEED);
+                driveForward(10, DRIVE_SPEED);
                 rotateLeft(150,gyroDirection);
             }
         }
-        driveBackward(174, 0.8);
-        rotateLeft(45,gyroDirection);
-        driveBackward(148, DRIVE_SPEED);
-        robot.markerServo.setPosition(LOCK_OPEN);
-        idle();
+
 
         /***    AUTONOMUS ENDS HERE                           ***/
         /***                AUTONOMUS ENDS HERE               ***/
