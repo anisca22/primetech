@@ -33,6 +33,7 @@ import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
@@ -55,7 +56,8 @@ import org.firstinspires.ftc.teamcode.HardwareTurda;
 import java.util.List;
 import java.util.Locale;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_INCH;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.BIG_TURN_SPEED;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_CM;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.DRIVE_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
@@ -90,14 +92,15 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Auto_NOCRATER_Oana", group="Pushbot")
-///@Disabled
+@Autonomous(name="Auto_Crater_Oana", group="Pushbot")
+@Disabled
 public class AUTO_OANA extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
     Orientation angles;
     BNO055IMU imu;
+    double gyroDirection = 0;
     double markerPosition = MARKER_START;
     double lockPosition = LOCK_CLOSED;
 
@@ -109,17 +112,6 @@ public class AUTO_OANA extends LinearOpMode {
     private static final String VUFORIA_KEY = "AddjBXL/////AAAAmcN61ZHW80IvtUwvfesWZa5JrV9AQn+mphNUco4vRSptOi8UXRpia2gnoLyZrCakLsIEUTD6Z84YWrKm3hjsUcsq8XuiTCxroeAOz4ExDes3eBcnsXsEWud++ymX1jCUgGt4sBHuRh7J0BZ+mj4ATIsXcBHf/SlWjmkKavc0vSqfwR6owMJPBzs0tv49k//jc6JJh2pKREB6YGUBUjlTsroX1qGvxxLHLTTHog1tmBe7cvsa+jQAGtn7kItK/quRF9DQqDGo9dc3UlPUbhwX5O9V4cdOt0r45C62g6Buj47mxVzzz5XurgeGYF1dMhLyl4toN5mCi03wUb+L1/X1pBGPNWwD3guQzUy7pGPjQlYw";
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
-
-    static final double     HEADING_THRESHOLD       = 5 ;      // As tight as we can make it with an integer gyro
-    static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
-    static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
-
-    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder 1440 tetrix
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_CM   = 4.0 * 2.54 ;     // For figuring circumference
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_CM * 3.1415);
-    static final double     COUNTS_PER_CM         = COUNTS_PER_INCH/2.54;
 
     @Override
     public void runOpMode() {
@@ -184,6 +176,9 @@ public class AUTO_OANA extends LinearOpMode {
 
         waitForStart();
 
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
+
         // Start the logging of measured acceleration
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
@@ -198,20 +193,35 @@ public class AUTO_OANA extends LinearOpMode {
 
 
 
-        //lowerRobot(50);
-        //sleep(1000);
+        lowerRobot();
 
-        ///COBORARE ROBOT
+        telemetry.addData("Direction", gyroDirection);
+        telemetry.addData("LOWERED", 1);
+        telemetry.update();
 
-        lockPosition = LOCK_OPEN;
-        robot.lockServo.setPosition(LOCK_OPEN);
-        encoderArm(1, 120, -1, 15);
+        rotateLeft(30, gyroDirection);
+        telemetry.addData("Direction", gyroDirection);
+        telemetry.update();
 
-        ///ALINIERE ROBOT
-        rotateLeft(180);
-        sleep(1000);
-        driveForward(50);
+        robot.armMotor.setPower(1);
 
+        //rotateRight(45, gyroDirection);
+        telemetry.addData("Direction", gyroDirection);
+        telemetry.update();
+
+        //robot.armMotor.setPower(0);
+
+        //driveBackward(10);
+
+        if (checkTensorFlow(1000) == true)
+        {
+            telemetry.addData("MINERAL", 1);
+        }
+        else telemetry.addData("MINERAL", 0);
+        telemetry.update();
+
+        robot.armMotor.setPower(0);
+/*
         ///VERIFICARE MINERALE AKA SAMPLING
         rotateRight(45);
         sleep(500);
@@ -255,14 +265,7 @@ public class AUTO_OANA extends LinearOpMode {
         sleep(1000);
 
 
-        /**
-        telemetry.addData("Clear", sensorRGB.alpha());
-        telemetry.addData("Red  ", sensorRGB.red());
-        telemetry.addData("Green", sensorRGB.green());
-        telemetry.addData("Blue ", sensorRGB.blue());
-        telemetry.addData("Path", "Complete");
-        telemetry.update();
-         */
+        */
 
 
         /***    AUTONOMUS ENDS HERE                           ***/
@@ -271,8 +274,7 @@ public class AUTO_OANA extends LinearOpMode {
     }
 
 
-    public boolean checkTensorFlow(int T)
-    {
+    public boolean checkTensorFlow(int T) {
         boolean isGold = false;
         while(T>0)
         {
@@ -334,8 +336,6 @@ public class AUTO_OANA extends LinearOpMode {
         return isGold;
     }
 
-
-
     private void initVuforia() {
         /*
          * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
@@ -358,12 +358,41 @@ public class AUTO_OANA extends LinearOpMode {
         tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
     }
 
-    private void rotation(double target)
-    {
+    private void rotation(double target) {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
 
-        while ((Math.abs(heading - target) > 3) && opModeIsActive())
+        while ((Math.abs(heading - target) > 5) && opModeIsActive())
+        {
+            if (heading > target)
+            {
+                robot.backLeftMotor.setPower(-BIG_TURN_SPEED);
+                robot.frontLeftMotor.setPower(-BIG_TURN_SPEED);
+                robot.backRightMotor.setPower(BIG_TURN_SPEED);
+                robot.frontRightMotor.setPower(BIG_TURN_SPEED);
+            }
+            else if (heading < target)
+            {
+                robot.backLeftMotor.setPower(BIG_TURN_SPEED);
+                robot.frontLeftMotor.setPower(BIG_TURN_SPEED);
+                robot.backRightMotor.setPower(-BIG_TURN_SPEED);
+                robot.frontRightMotor.setPower(-BIG_TURN_SPEED);
+            }
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+            telemetry.addData("STEP", 1);
+            telemetry.addData("Difference", Math.abs(heading - target));
+            telemetry.addData("Heading", heading);
+            telemetry.addData("Target", target);
+            telemetry.update();
+        }
+
+        robot.backLeftMotor.setPower(0);
+        robot.frontLeftMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
+
+        while ((Math.abs(heading - target) > 0.2) && opModeIsActive())
         {
             if (heading > target)
             {
@@ -381,36 +410,37 @@ public class AUTO_OANA extends LinearOpMode {
             }
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+            telemetry.addData("STEP", 2);
+            telemetry.addData("Difference", Math.abs(heading - target));
             telemetry.addData("Heading", heading);
-            telemetry.addData("NewDir", target);
+            telemetry.addData("Target", target);
             telemetry.update();
-            sleep(1);
         }
+
         robot.backLeftMotor.setPower(0);
         robot.frontLeftMotor.setPower(0);
         robot.backRightMotor.setPower(0);
         robot.frontRightMotor.setPower(0);
-
     }
 
-    private void rotateLeft (double angle) {
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+    private void rotateLeft (double angle, double heading) {
         telemetry.addData("Heading", heading);
         telemetry.addData("NewDir", heading - angle);
         telemetry.update();
-        sleep(1000);
+        //sleep(1000);
         rotation(heading + angle);
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
     }
 
-    private void rotateRight (double angle){
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+    private void rotateRight (double angle, double heading){
         telemetry.addData("Heading", heading);
         telemetry.addData("NewDir", heading - angle);
         telemetry.update();
-        sleep(1000);
+        //sleep(1000);
         rotation(heading - angle);
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
     }
 
     String formatAngle(AngleUnit angleUnit, double angle) {
@@ -442,7 +472,7 @@ public class AUTO_OANA extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
+            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
 
             robot.armMotor.setTargetPosition(armTarget);
 
@@ -474,9 +504,7 @@ public class AUTO_OANA extends LinearOpMode {
         }
     }
 
-    public void encoderDrive(double speed,
-                             double distance,
-                             double timeoutS) {
+    public void encoderDrive(double speed, double distance, double timeoutS) {
         int newBackLeftTarget;
         int newBackRightTarget;
         int newFrontLeftTarget;
@@ -485,10 +513,10 @@ public class AUTO_OANA extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
-            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
-            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
-            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
+            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
 
             robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
             robot.backRightMotor.setTargetPosition(newBackRightTarget);
@@ -552,14 +580,30 @@ public class AUTO_OANA extends LinearOpMode {
             sleep(250);   // optional pause after each move
         }
     }
+
     private void driveForward (double distance)
     {
         encoderDrive(DRIVE_SPEED, distance,15);
     }
+
     private void driveBackward (double distance)
     {
         encoderDrive(DRIVE_SPEED, -distance,15);
     }
 
+    private void lowerRobot() {
+        encoderArm(0.8, 15, 1, 15);
+        lockPosition = LOCK_OPEN;
+        robot.lockServo.setPosition(LOCK_OPEN);
+        robot.armMotor.setPower(0.8);
+        idle();
+        sleep(300);
+        robot.armMotor.setPower(0);
+
+        sleep(3000);
+        telemetry.addData("DONE", 1);
+        telemetry.update();
+        encoderArm(1, 15, -1, 15);
+    }
 }
 

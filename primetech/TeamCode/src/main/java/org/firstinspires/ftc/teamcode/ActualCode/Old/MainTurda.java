@@ -27,25 +27,28 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.ActualCode;
+package org.firstinspires.ftc.teamcode.ActualCode.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareRobot;
+import org.firstinspires.ftc.teamcode.HardwareTurda;
 
-import static org.firstinspires.ftc.teamcode.HardwareRobot.ARM_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareTurda.ARM_POWER;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.COLECTOR_POWER;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.INIT_CAPAC;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_CAPAC;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_PUTERE;
-import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_CAPAC;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_PUTERE;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.ROTATOR_POWER;
 import static org.firstinspires.ftc.teamcode.HardwareRobot.SLIDER_POWER;
+import static org.firstinspires.ftc.teamcode.HardwareTurda.MARKER_DOWN;
+import static org.firstinspires.ftc.teamcode.HardwareTurda.MARKER_START;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -61,9 +64,9 @@ import static org.firstinspires.ftc.teamcode.HardwareRobot.SLIDER_POWER;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Main TeleOP", group="Iterative Opmode")
+@TeleOp(name="Main Turda", group="Iterative Opmode")
 @Disabled
-public class Main extends OpMode
+public class MainTurda extends OpMode
 {
     // Declare OpMode members.
     double armPower = 0;
@@ -71,12 +74,15 @@ public class Main extends OpMode
     double sliderPower = 0;
     double colectorPower = 0;
     double capacPosition = INIT_CAPAC;
+    double markerPOS = MARKER_START;
     private ElapsedTime runtime = new ElapsedTime();
-    HardwareRobot robot = new HardwareRobot();
+    HardwareTurda robot = new HardwareTurda();
+    ColorSensor colorSensor;
 
     @Override
     public void init() {
         robot.init(hardwareMap);
+        colorSensor = hardwareMap.get(ColorSensor.class, "sensor_color");
         telemetry.addData("Status", "Initialized");
         telemetry.update();
     }
@@ -92,44 +98,60 @@ public class Main extends OpMode
 
     @Override
     public void loop() {
+
+        telemetry.addData("Clear", colorSensor.alpha());
+        telemetry.addData("Red  ", colorSensor.red());
+        telemetry.addData("Green", colorSensor.green());
+        telemetry.addData("Blue ", colorSensor.blue());
+        telemetry.update();
         ///CITIRE VARIABILE
         double y = -gamepad1.left_stick_y; ///FATA SPATE
-        double x  =  gamepad1.right_stick_x; /// STANGA DREAPTA
+        double x  =  -gamepad1.right_stick_x; /// STANGA DREAPTA
 
         ///CALCULARE PUTERE
         double leftPower = Range.clip(y + x, MIN_PUTERE, MAX_PUTERE);
         double rightPower = Range.clip(y - x, MIN_PUTERE, MAX_PUTERE);
 
         if (gamepad1.dpad_up)
-            armPower = ARM_POWER;
+        {
+            if (gamepad1.b)
+                armPower = 0.2;
+            else armPower = ARM_POWER;
+        }
         else if (gamepad1.dpad_down)
             armPower = -ARM_POWER;
         else
             armPower = 0;
 
+        if (gamepad2.x)
+            rotatorPower = ROTATOR_POWER;
+        else if (gamepad2.b)
+            rotatorPower = -ROTATOR_POWER;
+        else if (gamepad2.a)
+            rotatorPower = 0;
+
+        if(gamepad1.x)
+            markerPOS = MARKER_DOWN;
+        else if (gamepad1.y)
+            markerPOS = MARKER_START;
+
+        /**
         if (gamepad1.dpad_left)
             sliderPower = SLIDER_POWER;
         else if (gamepad1.dpad_right)
             sliderPower = -SLIDER_POWER;
         else
             sliderPower = 0;
+         * if (gamepad1.left_bumper)
+         *             colectorPower = COLECTOR_POWER;
+         *         else if (gamepad1.right_bumper)
+         *             colectorPower = -COLECTOR_POWER;
+         *         else colectorPower = 0;
+         *
 
-        if (gamepad1.left_bumper)
-            colectorPower = COLECTOR_POWER;
-        else if (gamepad1.right_bumper)
-            colectorPower = -COLECTOR_POWER;
-        else colectorPower = 0;
+         */
 
-        if (gamepad1.a)
-            rotatorPower = ROTATOR_POWER;
-        else if (gamepad1.b)
-            rotatorPower = -ROTATOR_POWER;
-        else rotatorPower = 0;
 
-        if (gamepad1.y)
-            capacPosition = INIT_CAPAC;
-        else if (gamepad1.x)
-            capacPosition = MAX_CAPAC;
         //SETARE PUTERE
         robot.frontLeftMotor.setPower(leftPower);
         robot.backLeftMotor.setPower(leftPower);
@@ -137,11 +159,9 @@ public class Main extends OpMode
         robot.backRightMotor.setPower(rightPower);
 
         robot.armMotor.setPower(armPower);
-        robot.sliderMotor.setPower(sliderPower);
-        robot.colectorMotor.setPower(colectorPower);
         robot.rotatorMotor.setPower(rotatorPower);
 
-        robot.capac.setPosition(capacPosition);
+        robot.marker.setPosition(markerPOS);
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
         telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);

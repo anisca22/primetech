@@ -27,13 +27,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.ActualCode;
+package org.firstinspires.ftc.teamcode.ActualCode.Old;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
@@ -47,8 +47,6 @@ import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 
 import java.util.Locale;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.HEADING_THRESHOLD;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.P_TURN_COEFF;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
 
 /**
@@ -60,7 +58,7 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
  * @see <a href="http://www.adafruit.com/products/2472">Adafruit IMU</a>
  */
 @TeleOp(name = "Sensor: BNO055 IMU Test", group = "Sensor")
-//@Disabled                            // Comment this out to add to the opmode list
+@Disabled                            // Comment this out to add to the opmode list
 public class SensorBNO055IMU extends LinearOpMode  {
     //----------------------------------------------------------------------------------------------
     // State

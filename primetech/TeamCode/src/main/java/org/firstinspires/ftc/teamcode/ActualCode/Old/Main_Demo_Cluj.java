@@ -27,14 +27,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.Training.CosminCosma;
+package org.firstinspires.ftc.teamcode.ActualCode.Old;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+
+import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
+import org.firstinspires.ftc.teamcode.HardwareTest;
+
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
 
 /**
  * This file contains an example of an iterative (Non-Linear) "OpMode".
@@ -50,35 +59,29 @@ import com.qualcomm.robotcore.util.Range;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Basic: Iterative OpMode", group="Iterative Opmode")
+@TeleOp(name="Main_Demo_Cluj", group="TeleOP")
 @Disabled
-public class BasicOpMode_Iterative extends OpMode
+public class Main_Demo_Cluj extends OpMode
 {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    private DcMotor leftDrive = null;
-    private DcMotor rightDrive = null;
+    double armPower = 0;
+    double markerPosition = MARKER_START;
+    double lockPosition = LOCK_OPEN;
+    double leftPower = 0;
+    double rightPower = 0;
+    HardwareDemoCluj robot = new HardwareDemoCluj();
+
 
     /*
      * Code to run ONCE when the driver hits INIT
      */
     @Override
     public void init() {
+        robot.init(hardwareMap);
         telemetry.addData("Status", "Initialized");
+        telemetry.update();
 
-        // Initialize the hardware variables. Note that the strings used here as parameters
-        // to 'get' must correspond to the names assigned during the robot configuration
-        // step (using the FTC Robot Controller app on the phone).
-        leftDrive  = hardwareMap.get(DcMotor.class, "left_drive");
-        rightDrive = hardwareMap.get(DcMotor.class, "right_drive");
-
-        // Most robots need the motor on one side to be reversed to drive forward
-        // Reverse the motor that runs backwards when connected directly to the battery
-        leftDrive.setDirection(DcMotor.Direction.FORWARD);
-        rightDrive.setDirection(DcMotor.Direction.REVERSE);
-
-        // Tell the driver that initialization is complete.
-        telemetry.addData("Status", "Initialized");
     }
 
     /*
@@ -102,27 +105,55 @@ public class BasicOpMode_Iterative extends OpMode
     @Override
     public void loop() {
         // Setup a variable for each drive wheel to save power level for telemetry
-        double leftPower;
-        double rightPower;
 
-        // Choose to drive using either Tank Mode, or POV Mode
-        // Comment out the method that's not used.  The default below is POV.
+        /**GAMEPAD 1**/
 
-        // POV Mode uses left stick to go forward, and right stick to turn.
-        // - This uses basic math to combine motions and is easier to drive straight.
-        double drive = -gamepad1.left_stick_y;
-        double turn  =  gamepad1.right_stick_x;
+        //DRIVE
+        double drive = -gamepad1.left_stick_y; //FATA SPATE
+        double turn  =  -gamepad1.right_stick_x;  //STANGA DREAPTA
+
+        //LOCK SERVO
+        if (gamepad1.x)
+            lockPosition = LOCK_OPEN;
+        else if (gamepad1.y)
+            lockPosition = LOCK_CLOSED;
+
+
+        //RIDICARE BRAT AUTOMAT
+
+        /**GAMEPAD 2**/
+
+        //MARKER SERVO
+        if (gamepad2.x)
+            markerPosition = MARKER_RELEASED;
+        else if (gamepad2.y)
+            markerPosition = MARKER_START;
+
+        //RIDICARE BRAT MANUAL
+        if (gamepad2.dpad_up)
+            armPower = 0.8;
+        else if (gamepad2.dpad_down)
+            armPower = -0.8;
+        else armPower = 0;
+
+
+
+        //CALCULARE PUTERE
         leftPower    = Range.clip(drive + turn, -1.0, 1.0) ;
         rightPower   = Range.clip(drive - turn, -1.0, 1.0) ;
 
-        // Tank Mode uses one stick to control each wheel.
-        // - This requires no math, but it is hard to drive forward slowly and keep straight.
-        // leftPower  = -gamepad1.left_stick_y ;
-        // rightPower = -gamepad1.right_stick_y ;
+        // PUTERE LA MOTOARE DE DEPLASARE
+        robot.backLeftMotor.setPower(leftPower);
+        robot.frontLeftMotor.setPower(leftPower);
+        robot.backRightMotor.setPower(rightPower);
+        robot.frontRightMotor.setPower(rightPower);
 
-        // Send calculated power to wheels
-        leftDrive.setPower(leftPower);
-        rightDrive.setPower(rightPower);
+        // PUTERE LA MOTORUL PENTRU BRAT
+        robot.armMotor.setPower(armPower);
+
+        //POZITIONARE SERVOURI
+        robot.markerServo.setPosition(markerPosition);
+        robot.lockServo.setPosition(lockPosition);
 
         // Show the elapsed game time and wheel power.
         telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -132,8 +163,21 @@ public class BasicOpMode_Iterative extends OpMode
     /*
      * Code to run ONCE after the driver hits STOP
      */
+
+
     @Override
     public void stop() {
-    }
+        //OPRIT MOTOARE DE DEPLASARE
+        robot.backLeftMotor.setPower(0);
+        robot.frontLeftMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
 
+        //OPRIT MOTORUL DE RIDICARE
+        robot.armMotor.setPower(0);
+
+        //SETARE POZITIE SERVOURI DE SFARSIT
+        robot.lockServo.setPosition(LOCK_OPEN);
+        robot.markerServo.setPosition(MARKER_START);
+    }
 }

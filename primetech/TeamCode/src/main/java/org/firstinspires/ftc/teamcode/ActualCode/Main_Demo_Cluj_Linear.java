@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_INCH;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_CM;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
@@ -117,19 +117,21 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 robot.lockServo.setPosition(LOCK_CLOSED);
             }
 */
-            if (gamepad1.dpad_down && gamepad1.b)
+            if (gamepad1.b)
             {
                 stopItDude();
-                encoderArm(1, 15, 1, 15);
+                encoderArm(0.8, 15, 1, 15);
                 lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
-                encoderArm(1, 15, 1, 15);
-                sleep(2000);
+                //sleep(1000);
+                //encoderArm(1, 15, 1, 15);
+                sleep(3000);
+                telemetry.addData("DONE", 1);
+                telemetry.update();
                 //sleep(2000);
                 //lockPosition = LOCK_CLOSED;
                 //robot.lockServo.setPosition(LOCK_CLOSED);
             }
-
 
             /**GAMEPAD 2**/
 
@@ -165,16 +167,10 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             robot.backRightMotor.setPower(rightPower);
             robot.frontRightMotor.setPower(rightPower);
 
-            // PUTERE LA MOTORUL PENTRU BRAT
-
-
             //POZITIONARE SERVOURI
             robot.markerServo.setPosition(markerPosition);
             robot.lockServo.setPosition(lockPosition);
 
-            // Show the elapsed game time and wheel power.
-            telemetry.addData("Status", "Run Time: " + runtime.toString());
-            telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
         }
 
         stopItDude();
@@ -209,7 +205,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
+            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
 
             robot.armMotor.setTargetPosition(armTarget);
 
@@ -236,8 +232,6 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             // Turn off RUN_TO_POSITION
             robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
-
-            //sleep(250);   // optional pause after each move
         }
     }
 }

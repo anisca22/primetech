@@ -27,21 +27,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.Training.Oana;
+package org.firstinspires.ftc.teamcode.ActualCode;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
-import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
-import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.qualcomm.robotcore.util.Range;
+import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.Acceleration;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesOrder;
 import org.firstinspires.ftc.robotcore.external.navigation.AxesReference;
@@ -56,10 +52,13 @@ import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 import java.util.List;
 import java.util.Locale;
 
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.BIG_TURN_SPEED;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_CM;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.DRIVE_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -88,17 +87,17 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Auto_CRATER_Oana", group="Pushbot")
-@Disabled
-public class AUTO_OANA_CRATER extends LinearOpMode {
+@Autonomous(name="Auto_Crater", group="Pushbot")
+///@Disabled
+public class Auto_Ana_Crater extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
-    ModernRoboticsI2cGyro   gyro    = null;
-
-    BNO055IMU imu;
     Orientation angles;
-    Acceleration gravity;
+    BNO055IMU imu;
+    double gyroDirection = 0;
+    double markerPosition = MARKER_START;
+    double lockPosition = LOCK_CLOSED;
 
     private ElapsedTime     runtime = new ElapsedTime();
 
@@ -109,21 +108,10 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    static final double     HEADING_THRESHOLD       = 5 ;      // As tight as we can make it with an integer gyro
-    static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
-    static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
-
-    static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder 1440 tetrix
-    static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    static final double     WHEEL_DIAMETER_CM   = 4.0 * 2.54 ;     // For figuring circumference
-    static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
-            (WHEEL_DIAMETER_CM * 3.1415);
-    static final double     DRIVE_SPEED             = 0.4;
-    static final double     TURN_SPEED              = 0.2;
-
-
     @Override
     public void runOpMode() {
+
+
 
         telemetry.addData("HI!", " DON'T TOUCH ANYTHING");
         telemetry.update();
@@ -135,18 +123,6 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         /***INIT***/
         robot.init(hardwareMap);
 
-        //IMU
-        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
-        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
-        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
-        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
-        parameters.loggingEnabled = true;
-        parameters.loggingTag = "IMU";
-        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
-
-        imu = hardwareMap.get(BNO055IMU.class, "imu");
-        imu.initialize(parameters);
-
         /***VUFORIA***/
         initVuforia();
         if (ClassFactory.getInstance().canCreateTFObjectDetector()) {
@@ -156,18 +132,9 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         }
 
         /***FLASH***/
+        CameraDevice.getInstance().setFlashTorchMode(true);
         //CameraDevice.getInstance().setFlashTorchMode(true);
 
-        /***GYRO***/
-        gyro = (ModernRoboticsI2cGyro)hardwareMap.gyroSensor.get("gyro");
-
-        gyro.calibrate();
-
-        // make sure the gyro is calibrated before continuing
-        while (!isStopRequested() && gyro.isCalibrating())  {
-            sleep(50);
-            idle();
-        }
 
 
         /***ENCODERS***/
@@ -183,98 +150,107 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         telemetry.update();
 
 
-        telemetry.addData(">", "Robot Ready.");    //
-        telemetry.update();
+        // Set up the parameters with which we will use our IMU. Note that integration
+        // algorithm here just reports accelerations to the logcat log; it doesn't actually
+        // provide positional information.
+        BNO055IMU.Parameters parameters = new BNO055IMU.Parameters();
+        parameters.angleUnit = BNO055IMU.AngleUnit.DEGREES;
+        parameters.accelUnit = BNO055IMU.AccelUnit.METERS_PERSEC_PERSEC;
+        parameters.calibrationDataFile = "BNO055IMUCalibration.json"; // see the calibration sample opmode
+        parameters.loggingEnabled = true;
+        parameters.loggingTag = "IMU";
+        parameters.accelerationIntegrationAlgorithm = new JustLoggingAccelerationIntegrator();
 
-        gyro.resetZAxisIntegrator();
+        // Retrieve and initialize the IMU. We expect the IMU to be attached to an I2C port
+        // on a Core Device Interface Module, configured to be a sensor of type "AdaFruit IMU",
+        // and named "imu".
+        imu = hardwareMap.get(BNO055IMU.class, "imu");
+        imu.initialize(parameters);
 
-        /** START**/
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
 
-        waitForStart();
-
+        // Start the logging of measured acceleration
         imu.startAccelerationIntegration(new Position(), new Velocity(), 1000);
 
         if (tfod != null) {
             tfod.activate();
         }
+
+        telemetry.addData(">", "Robot Ready.");    //
+        telemetry.update();
+
+        waitForStart();
+
         runtime.reset();
 
         /***    AUTONOMUS STARTS HERE                           ***/
         /***                AUTONOMUS STARTS HERE               ***/
         /***                            AUTONOMUS STARTS HERE   ***/
 
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
 
-        sleep(1000);
-        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
-        double roll = noformatAngle(angles.angleUnit, angles.secondAngle);
 
-        telemetry.addData("heading", formatAngle(angles.angleUnit, angles.firstAngle));
-        telemetry.addData("roll", formatAngle(angles.angleUnit, angles.secondAngle));
-        telemetry.addData("heading2", heading);
-        telemetry.addData("roll2", roll);
+        lowerRobot();
+
+        telemetry.addData("Direction", gyroDirection);
+        telemetry.addData("LOWERED", 1);
         telemetry.update();
 
+        rotateLeft(35, gyroDirection);
+        robot.armMotor.setPower(1);
 
-        encoderArm(1, 120, -1, 30);
-        sleep(1000);
-
-        ///ALINIERE ROBOT
-        rotateLeft(180);
-        sleep(1000);
-        driveForward(50);
-
-        ///VERIFICARE MINERALE AKA SAMPLING
-        rotateRight(45);
+        telemetry.addData("Direction", gyroDirection);
+        telemetry.update();
         sleep(500);
-        if (checkTensorFlow(2000) == true) {
-            driveForward(75);
-            sleep(1000);
-            driveBackward(50);
-            rotateLeft(45);
-            driveForward(100);
-        }
-        else{
-            rotateLeft(45);
-            sleep(1000);
-            if (checkTensorFlow(2000) == true) {
-                driveForward(75);
-                sleep(1000);
-                driveBackward(50);
-                rotateLeft(45);
-                driveForward(50);
 
+        robot.armMotor.setPower(0);
+        telemetry.addData("Direction", gyroDirection);
+        telemetry.update();
+
+        if (checkTensorFlow(1000) == true)
+        {
+            telemetry.addData("MINERAL:", "left");
+            telemetry.update();
+            driveBackward(129, DRIVE_SPEED);
+            sleep(200);
+            driveForward(65, DRIVE_SPEED);
+            rotateLeft(65,gyroDirection);
+        }
+        else {
+            rotateRight(40, gyroDirection);
+            driveBackward(19, DRIVE_SPEED);
+            if (checkTensorFlow(1000) == true)
+            {
+                telemetry.addData("MINERAL:", "center");
+                telemetry.update();
+                driveBackward(129, DRIVE_SPEED);
+                sleep(200);
+                driveForward(65, DRIVE_SPEED);
+                rotateLeft(115,gyroDirection);
             }
             else {
-                rotateLeft(45);
-                sleep(1000);
-                driveForward(75);
-                sleep(1000);
-                driveBackward(20);
-                rotateLeft(45);
+                rotateRight(45, gyroDirection);
+                telemetry.addData("MINERAL:", "right");
+                telemetry.update();
+                driveBackward(129, DRIVE_SPEED);
+                sleep(200);
+                driveForward(65, DRIVE_SPEED);
+                rotateLeft(150,gyroDirection);
             }
         }
+        driveBackward(174, 0.8);
+        rotateLeft(45,gyroDirection);
+        driveBackward(148, DRIVE_SPEED);
+        robot.markerServo.setPosition(LOCK_OPEN);
+        idle();
 
-        ///DEPLASARE SPRE DEPOT
-        driveForward(50);
-        rotateLeft(45);
-        sleep(1000);
-        driveForward(100);
-
-
-        ///PLASARE TEAM MARKER
-        driveForward(30);
-        robot.markerServo.setPosition(MARKER_RELEASED);
-        sleep(1000);
-        driveBackward(10);
-        robot.markerServo.setPosition(MARKER_START);
-        sleep(1000);
-
+        /***    AUTONOMUS ENDS HERE                           ***/
+        /***                AUTONOMUS ENDS HERE               ***/
+        /***                            AUTONOMUS ENDS HERE   ***/
     }
 
 
-    public boolean checkTensorFlow(int T)
-    {
+    public boolean checkTensorFlow(int T) {
         boolean isGold = false;
         while(T>0)
         {
@@ -282,8 +258,6 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
                 // getUpdatedRecognitions() will return null if no new information is available since
                 // the last time that call was made.
                 List<Recognition> updatedRecognitions = tfod.getUpdatedRecognitions();
-
-
 
                 if (updatedRecognitions != null) {
                     telemetry.addData("# Object Detected", updatedRecognitions.size());
@@ -297,31 +271,6 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
                     if(goldie != -1)
                         isGold = true;
 
-                    if (updatedRecognitions.size() == 3) {
-                        int goldMineralX = -1;
-                        int silverMineral1X = -1;
-                        int silverMineral2X = -1;
-                        for (Recognition recognition : updatedRecognitions) {
-                            if (recognition.getLabel().equals(LABEL_GOLD_MINERAL)) {
-                                goldMineralX = (int) recognition.getLeft();
-                                ///isGold = true;
-                            } else if (silverMineral1X == -1) {
-                                silverMineral1X = (int) recognition.getLeft();
-                            } else {
-                                silverMineral2X = (int) recognition.getLeft();
-                            }
-                        }
-
-                        if (goldMineralX != -1 && silverMineral1X != -1 && silverMineral2X != -1) {
-                            if (goldMineralX < silverMineral1X && goldMineralX < silverMineral2X) {
-                                telemetry.addData("Gold Mineral Position", "Left");
-                            } else if (goldMineralX > silverMineral1X && goldMineralX > silverMineral2X) {
-                                telemetry.addData("Gold Mineral Position", "Right");
-                            } else {
-                                telemetry.addData("Gold Mineral Position", "Center");
-                            }
-                        }
-                    }
                     telemetry.update();
                 }
             }
@@ -336,6 +285,128 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         return isGold;
     }
 
+    private void initVuforia() {
+        /*
+         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
+         */
+        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
+
+        parameters.vuforiaLicenseKey = VUFORIA_KEY;
+        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
+        //  Instantiate the Vuforia engine
+        vuforia = ClassFactory.getInstance().createVuforia(parameters);
+
+        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+    }
+
+    private void initTfod() {
+        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
+                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
+        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
+        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
+        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+    }
+
+    private void rotation(double target) {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+
+        while ((Math.abs(heading - target) > 5) && opModeIsActive())
+        {
+            if (heading > target)
+            {
+                robot.backLeftMotor.setPower(-BIG_TURN_SPEED);
+                robot.frontLeftMotor.setPower(-BIG_TURN_SPEED);
+                robot.backRightMotor.setPower(BIG_TURN_SPEED);
+                robot.frontRightMotor.setPower(BIG_TURN_SPEED);
+            }
+            else if (heading < target)
+            {
+                robot.backLeftMotor.setPower(BIG_TURN_SPEED);
+                robot.frontLeftMotor.setPower(BIG_TURN_SPEED);
+                robot.backRightMotor.setPower(-BIG_TURN_SPEED);
+                robot.frontRightMotor.setPower(-BIG_TURN_SPEED);
+            }
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+            telemetry.addData("STEP", 1);
+            telemetry.addData("Difference", Math.abs(heading - target));
+            telemetry.addData("Heading", heading);
+            telemetry.addData("Target", target);
+            telemetry.update();
+        }
+
+        robot.backLeftMotor.setPower(0);
+        robot.frontLeftMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
+
+        while ((Math.abs(heading - target) > 0.2) && opModeIsActive())
+        {
+            if (heading > target)
+            {
+                robot.backLeftMotor.setPower(-TURN_SPEED);
+                robot.frontLeftMotor.setPower(-TURN_SPEED);
+                robot.backRightMotor.setPower(TURN_SPEED);
+                robot.frontRightMotor.setPower(TURN_SPEED);
+            }
+            else if (heading < target)
+            {
+                robot.backLeftMotor.setPower(TURN_SPEED);
+                robot.frontLeftMotor.setPower(TURN_SPEED);
+                robot.backRightMotor.setPower(-TURN_SPEED);
+                robot.frontRightMotor.setPower(-TURN_SPEED);
+            }
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+            telemetry.addData("STEP", 2);
+            telemetry.addData("Difference", Math.abs(heading - target));
+            telemetry.addData("Heading", heading);
+            telemetry.addData("Target", target);
+            telemetry.update();
+        }
+
+        robot.backLeftMotor.setPower(0);
+        robot.frontLeftMotor.setPower(0);
+        robot.backRightMotor.setPower(0);
+        robot.frontRightMotor.setPower(0);
+    }
+
+    private void rotateLeft (double angle, double heading) {
+        telemetry.addData("Heading", heading);
+        telemetry.addData("NewDir", heading - angle);
+        telemetry.update();
+        //sleep(1000);
+        rotation(heading + angle);
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
+    }
+
+    private void rotateRight (double angle, double heading){
+        telemetry.addData("Heading", heading);
+        telemetry.addData("NewDir", heading - angle);
+        telemetry.update();
+        //sleep(1000);
+        rotation(heading - angle);
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
+    }
+
+    String formatAngle(AngleUnit angleUnit, double angle) {
+        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    String formatDegrees(double degrees) {
+        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
+    }
+
+    double noformatAngle(AngleUnit angleUnit, double angle) {
+        return noFormatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
+    }
+
+    double noFormatDegrees(double degrees) {
+        return AngleUnit.DEGREES.normalize(degrees);
+    }
 
     public void encoderArm(double speed, double distance, double direction, double timeoutS) {
         int armTarget;
@@ -350,7 +421,7 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_INCH);
+            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
 
             robot.armMotor.setTargetPosition(armTarget);
 
@@ -382,9 +453,7 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         }
     }
 
-    public void encoderDrive(double speed,
-                             double leftInches, double rightInches,
-                             double timeoutS) {
+    public void encoderDrive(double speed, double distance, double timeoutS) {
         int newBackLeftTarget;
         int newBackRightTarget;
         int newFrontLeftTarget;
@@ -393,10 +462,10 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
-            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(leftInches * COUNTS_PER_INCH);
-            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(rightInches * COUNTS_PER_INCH);
+            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
 
             robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
             robot.backRightMotor.setTargetPosition(newBackRightTarget);
@@ -426,24 +495,24 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
                     (runtime.seconds() < timeoutS) &&
                     (
                             robot.backLeftMotor.isBusy() && robot.backRightMotor.isBusy() &&
-                            robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()
+                                    robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()
                     ))
-                {
+            {
 
-                    // Display it for the driver.
-                    telemetry.addData("Path1",  "Running to %7d :%7d :%7d :%7d"
-                            , newFrontLeftTarget, newFrontRightTarget
-                            , newBackLeftTarget, newBackRightTarget
-                            );
-                    telemetry.addData("Path2",  "Running at %7d :%7d :%7d :%7d",
-                            robot.frontLeftMotor.getCurrentPosition(),
-                            robot.frontRightMotor.getCurrentPosition()
-                            ,
-                            robot.backLeftMotor.getCurrentPosition(),
-                            robot.backRightMotor.getCurrentPosition()
-                    );
-                    telemetry.update();
-                }
+                // Display it for the driver.
+                telemetry.addData("Path1",  "Running to %7d :%7d :%7d :%7d"
+                        , newFrontLeftTarget, newFrontRightTarget
+                        , newBackLeftTarget, newBackRightTarget
+                );
+                telemetry.addData("Path2",  "Running at %7d :%7d :%7d :%7d",
+                        robot.frontLeftMotor.getCurrentPosition(),
+                        robot.frontRightMotor.getCurrentPosition()
+                        ,
+                        robot.backLeftMotor.getCurrentPosition(),
+                        robot.backRightMotor.getCurrentPosition()
+                );
+                telemetry.update();
+            }
 
             // Stop all motion;
             robot.backLeftMotor.setPower(0);
@@ -461,66 +530,33 @@ public class AUTO_OANA_CRATER extends LinearOpMode {
         }
     }
 
-
-
-
-    private void initVuforia() {
-        /*
-         * Configure Vuforia by creating a Parameter object, and passing it to the Vuforia engine.
-         */
-        VuforiaLocalizer.Parameters parameters = new VuforiaLocalizer.Parameters();
-
-        parameters.vuforiaLicenseKey = VUFORIA_KEY;
-        parameters.cameraDirection = VuforiaLocalizer.CameraDirection.BACK;
-        //  Instantiate the Vuforia engine
-        vuforia = ClassFactory.getInstance().createVuforia(parameters);
-
-        // Loading trackables is not necessary for the Tensor Flow Object Detection engine.
+    private void driveForward (double distance, double speed)
+    {
+        encoderDrive(speed, distance,15);
     }
 
-    private void initTfod() {
-        int tfodMonitorViewId = hardwareMap.appContext.getResources().getIdentifier(
-                "tfodMonitorViewId", "id", hardwareMap.appContext.getPackageName());
-        TFObjectDetector.Parameters tfodParameters = new TFObjectDetector.Parameters(tfodMonitorViewId);
-        tfod = ClassFactory.getInstance().createTFObjectDetector(tfodParameters, vuforia);
-        tfod.loadModelFromAsset(TFOD_MODEL_ASSET, LABEL_GOLD_MINERAL, LABEL_SILVER_MINERAL);
+    private void driveBackward (double distance, double speed) {
+        encoderDrive(speed, -distance,15);
     }
 
-    private void rotateLeft (double angle) {
-        double actualAngle = gyro.getHeading();
-        ///gyroTurn(TURN_SPEED, actualAngle + angle);
+    private void lowerRobot() {
+        lockPosition = LOCK_OPEN;
+        robot.lockServo.setPosition(LOCK_OPEN);
+        idle();
+        encoderArm(0.8, 15, 1, 15);
+        robot.armMotor.setPower(0);
+        /**
+        encoderArm(0.8, 15, 1, 15);
+        lockPosition = LOCK_OPEN;
+        robot.lockServo.setPosition(LOCK_OPEN);
+        robot.armMotor.setPower(0.8);
+        idle();
+        sleep(300);
+        robot.armMotor.setPower(0);*/
+        sleep(3000);
+        telemetry.addData("DONE", 1);
+        telemetry.update();
+        encoderArm(1, 15, -1, 15);
     }
-
-    private void rotateRight (double angle) {
-        double actualAngle = gyro.getHeading();
-        ///gyroTurn(-TURN_SPEED, actualAngle - angle);
-    }
-
-    private void driveBackward (double distance) {
-        double actualAngle = gyro.getIntegratedZValue();
-        //gyroDrive(DRIVE_SPEED, -distance, actualAngle);
-    }
-
-    private void driveForward (double distance) {
-        double actualAngle = gyro.getIntegratedZValue();
-        //gyroDrive(DRIVE_SPEED, distance, actualAngle);
-    }
-
-    String formatAngle(AngleUnit angleUnit, double angle) {
-        return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
-    }
-
-    String formatDegrees(double degrees) {
-        return String.format(Locale.getDefault(), "%.1f", AngleUnit.DEGREES.normalize(degrees));
-    }
-
-    double noformatAngle(AngleUnit angleUnit, double angle) {
-        return noFormatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
-    }
-
-    double noFormatDegrees(double degrees) {
-        return AngleUnit.DEGREES.normalize(degrees);
-    }
-
 }
 

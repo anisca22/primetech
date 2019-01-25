@@ -27,22 +27,26 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.ActualCode;
+package org.firstinspires.ftc.teamcode.ActualCode.Old;
 
 import com.qualcomm.hardware.modernrobotics.ModernRoboticsI2cGyro;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.ColorSensor;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
+import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import org.firstinspires.ftc.teamcode.HardwareRobot;
 import org.firstinspires.ftc.teamcode.HardwareTurda;
 
+import java.sql.Driver;
 import java.util.List;
 
 /**
@@ -72,9 +76,9 @@ import java.util.List;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="AutoCrater", group="Pushbot")
-///@Disabled
-public class AutoTest2 extends LinearOpMode {
+@Autonomous(name="AutoNoCrater", group="Pushbot")
+@Disabled
+public class AutoTest1 extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareTurda robot = new HardwareTurda();   // Use a Pushbot's hardware
@@ -90,7 +94,7 @@ public class AutoTest2 extends LinearOpMode {
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
-    static final double     HEADING_THRESHOLD       = 5 ;      // As tight as we can make it with an integer gyro
+    static final double     HEADING_THRESHOLD       = 1 ;      // As tight as we can make it with an integer gyro
     static final double     P_TURN_COEFF            = 0.1;     // Larger is more responsive, but also less stable
     static final double     P_DRIVE_COEFF           = 0.15;     // Larger is more responsive, but also less stable
 
@@ -100,7 +104,7 @@ public class AutoTest2 extends LinearOpMode {
     static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_CM * 3.1415);
     static final double     DRIVE_SPEED             = 0.4;
-    static final double     TURN_SPEED              = 0.2;
+    static final double     TURN_SPEED              = 0.3;
 
 
     @Override
@@ -108,7 +112,6 @@ public class AutoTest2 extends LinearOpMode {
 
         telemetry.addData("HI!", " DON'T TOUCH ANYTHING");
         telemetry.update();
-
         /***    INIT STARTS HERE                           ***/
         /***                INIT STARTS HERE               ***/
         /***                            INIT STARTS HERE   ***/
@@ -175,15 +178,9 @@ public class AutoTest2 extends LinearOpMode {
         //lowerRobot(50);
         //sleep(1000);
 
+
         ///COBORARE ROBOT
-
-        encoderArm(0.2, 170, 30);
-
-        /*
-        rotateLeft(90);
-        rotateRight(90);
-
-        encoderArm(1, 100, 20);
+        encoderArm(1, 170, 10);
         sleep(1000);
         driveBackward(2);
 
@@ -202,7 +199,9 @@ public class AutoTest2 extends LinearOpMode {
         {
             sleep(1000);
             driveForward(54);
-            driveBackward(54);
+            rotateLeft(55);
+            sleep(1000);
+            driveForward(48);
         }
         else
         {
@@ -213,7 +212,8 @@ public class AutoTest2 extends LinearOpMode {
             {
                 sleep(1000);
                 driveForward(43);
-                driveBackward(43);
+                sleep(1000);
+                driveForward(48);
             }
             else
             {
@@ -223,18 +223,16 @@ public class AutoTest2 extends LinearOpMode {
                 if(checkTensorFlow(2000) == true)
                 {
                     driveForward(54);
-                    driveBackward(54);
+                    rotateRight(55);
+                    sleep(1000);
+                    driveForward(48);
                 }
             }
         }
         sleep(1000);
 
-        rotateLeft(90);
-        driveForward(104);
-        rotateLeft(45);
-        driveForward(127);
         ///PUNE TEAM MARKER-UL AICI
-        
+
         /**
         if (isGold == true)
             telemetry.addData("Found Gold","YES");
@@ -243,6 +241,7 @@ public class AutoTest2 extends LinearOpMode {
         telemetry.update();
          */
         sleep(1000);
+
 
 
         /**
@@ -567,7 +566,6 @@ public class AutoTest2 extends LinearOpMode {
 
         // keep looping while we are still active, and not on heading.
         while (opModeIsActive() && !onHeading(speed, angle, P_TURN_COEFF)) {
-            telemetry.addData("UUUU", gyro.getIntegratedZValue());
             // Update telemetry & Allow time for other processes to run.
             telemetry.update();
         }
@@ -602,8 +600,6 @@ public class AutoTest2 extends LinearOpMode {
         // determine turn power based on +/- error
         error = getError(angle);
 
-        telemetry.addData("UNGHI", angle);
-        telemetry.update();
         if (Math.abs(error) <= HEADING_THRESHOLD) {
             steer = 0.0;
             leftSpeed  = 0.0;
@@ -615,7 +611,6 @@ public class AutoTest2 extends LinearOpMode {
             rightSpeed  = speed * steer;
             leftSpeed   = -rightSpeed;
         }
-
 
         // Send desired speeds to motors.
         robot.backLeftMotor.setPower(leftSpeed);
@@ -670,12 +665,12 @@ public class AutoTest2 extends LinearOpMode {
 
     private void rotateLeft(double angle) {
         double actualAngle = gyro.getIntegratedZValue();
-        gyroTurn(TURN_SPEED, actualAngle + (360 - angle));
+        gyroTurn(TURN_SPEED, actualAngle + angle);
     }
 
     private void rotateRight(double angle) {
         double actualAngle = gyro.getIntegratedZValue();
-        gyroTurn(-TURN_SPEED, actualAngle + angle);
+        gyroTurn(-TURN_SPEED, actualAngle - angle);
     }
 
     private void driveBackward(double distance) {

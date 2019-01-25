@@ -77,14 +77,15 @@ public class HardwareDemoCluj
     public final static double LOCK_OPEN = 0.2;
     public final static double LOCK_CLOSED = 0;
 
-    public static final double     TURN_SPEED            = 0.2;
-    public static final double     DRIVE_SPEED            = 0.2;
-    public static final double      HEADING_THRESHOLD       = 10;
+    public static final double     BIG_TURN_SPEED            = 0.4;
+    public static final double     TURN_SPEED            = 0.15;
+    public static final double     DRIVE_SPEED            = 1;
+    public static final double     HEADING_THRESHOLD       = 10;
     public static final double     P_TURN_COEFF            = 0.1;
     public static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder 1440 tetrix
     public static final double     DRIVE_GEAR_REDUCTION    = 2.0 ;     // This is < 1.0 if geared UP
-    public static final double     WHEEL_DIAMETER_CM   = 4.0 * 2.54 ;     // For figuring circumference
-    public static final double     COUNTS_PER_INCH         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
+    public static final double     WHEEL_DIAMETER_CM   = 4.0;     // For figuring circumference
+    public static final double     COUNTS_PER_CM         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION * 2.54) /
             (WHEEL_DIAMETER_CM * 3.1415);
 
     /* Local OpMode members. */
