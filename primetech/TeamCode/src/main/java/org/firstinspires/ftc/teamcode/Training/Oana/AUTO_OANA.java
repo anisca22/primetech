@@ -204,9 +204,10 @@ public class AUTO_OANA extends LinearOpMode {
         ///COBORARE ROBOT
 
         lockPosition = LOCK_OPEN;
-        robot.lockServo.setPosition(LOCK_OPEN);
+        robot.lockServo.setPosition(lockPosition);
         encoderArm(1, 120, -1, 15);
 
+        /*
         ///ALINIERE ROBOT
         rotateLeft(180);
         sleep(1000);
@@ -263,6 +264,8 @@ public class AUTO_OANA extends LinearOpMode {
         telemetry.addData("Path", "Complete");
         telemetry.update();
          */
+        */
+
 
 
         /***    AUTONOMUS ENDS HERE                           ***/
