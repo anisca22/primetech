@@ -209,6 +209,16 @@ public class AUTO_OANA extends LinearOpMode {
         telemetry.addData("Direction", gyroDirection);
         telemetry.update();
 
+        lockPosition = LOCK_OPEN;
+        robot.lockServo.setPosition(lockPosition);
+        encoderArm(1, 120, -1, 15);
+
+        /*
+        ///ALINIERE ROBOT
+        rotateLeft(180);
+        sleep(1000);
+        driveForward(50);
+
         //robot.armMotor.setPower(0);
 
         //driveBackward(10);
@@ -267,6 +277,14 @@ public class AUTO_OANA extends LinearOpMode {
 
         */
 
+        /**
+        telemetry.addData("Clear", sensorRGB.alpha());
+        telemetry.addData("Red  ", sensorRGB.red());
+        telemetry.addData("Green", sensorRGB.green());
+        telemetry.addData("Blue ", sensorRGB.blue());
+        telemetry.addData("Path", "Complete");
+        telemetry.update();
+         */
 
         /***    AUTONOMUS ENDS HERE                           ***/
         /***                AUTONOMUS ENDS HERE               ***/

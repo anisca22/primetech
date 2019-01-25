@@ -111,8 +111,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 stopItDude();
                 lockPosition = LOCK_OPEN;
                 robot.lockServo.setPosition(LOCK_OPEN);
-                encoderArm(1, 130, 1, 15);
-                //encoderArm(0.8, 20, 1, 15);
+                encoderArm(1, 140, 1, 15);
                 lockPosition = LOCK_CLOSED;
                 robot.lockServo.setPosition(LOCK_CLOSED);
             }
