@@ -70,6 +70,8 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
     double lockPosition = LOCK_CLOSED;
     double leftPower = 0;
     double rightPower = 0;
+    double drive = 0;
+    double turn = 0;
     HardwareDemoCluj robot = new HardwareDemoCluj();
 
     @Override
@@ -86,9 +88,21 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
 
             /**GAMEPAD 1**/
 
+
             //DRIVE
-            double drive = -gamepad1.left_stick_y/2; //FATA SPATE
-            double turn  =  -gamepad1.right_stick_x/2;  //STANGA DREAPTA
+            if (gamepad1.left_stick_y != 0)
+                drive = -gamepad1.left_stick_y/2; //FATA SPATE
+            else if (gamepad2.left_stick_y != 0)
+                drive = -gamepad2.left_stick_y/2; //FATA SPATE
+            else
+                drive = 0;
+
+            if (gamepad1.right_stick_x != 0)
+                turn  =  -gamepad1.right_stick_x/2;  //STANGA DREAPTA
+            else if (gamepad2.right_stick_x != 0)
+                turn  =  -gamepad2.right_stick_x/2;  //STANGA DREAPTA
+            else turn = 0;
+
 
             //LOCK SERVO
             if (gamepad1.x)
@@ -116,6 +130,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 robot.lockServo.setPosition(LOCK_CLOSED);
             }
 */
+            /*
             if (gamepad1.b)
             {
                 stopItDude();
@@ -131,13 +146,13 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
                 //lockPosition = LOCK_CLOSED;
                 //robot.lockServo.setPosition(LOCK_CLOSED);
             }
-
+            */
             /**GAMEPAD 2**/
 
             //MARKER SERVO
-            if (gamepad2.x)
+            if (gamepad1.a)
                 markerPosition = MARKER_RELEASED;
-            else if (gamepad2.y)
+            else if (gamepad1.b)
                 markerPosition = MARKER_START;
 
             //RIDICARE BRAT MANUAL
@@ -148,12 +163,13 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
             else if (!(gamepad1.dpad_up ||gamepad1.dpad_down))
                 armPower = 0;
 
+            /*
             else if (gamepad2.dpad_up)
                 armPower = 0.6;
             else if (gamepad2.dpad_down)
                 armPower = -0.6;
             else armPower = 0;
-
+            */
             robot.armMotor.setPower(armPower);
 
             //CALCULARE PUTERE
