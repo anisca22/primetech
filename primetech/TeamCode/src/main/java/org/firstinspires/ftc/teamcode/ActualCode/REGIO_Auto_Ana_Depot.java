@@ -35,7 +35,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.vuforia.CameraDevice;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -48,13 +48,12 @@ import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
 import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
+import org.firstinspires.ftc.teamcode.HardwareMecanum;
 
 import java.util.List;
 import java.util.Locale;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.BIG_TURN_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.DRIVE_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
@@ -88,12 +87,12 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Auto_Depot", group="Pushbot")
+@Autonomous(name="Auto_Depot_Regio", group="Pushbot")
 ///@Disabled
-public class Auto_Ana_Depot extends LinearOpMode {
+public class REGIO_Auto_Ana_Depot extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
+    HardwareMecanum robot = new HardwareMecanum();   // Use a Pushbot's hardware
     Orientation angles;
     BNO055IMU imu;
     double gyroDirection = 0;
@@ -191,90 +190,20 @@ public class Auto_Ana_Depot extends LinearOpMode {
 
 
 
-        lowerRobot();
+        //lowerRobot();
 
-        telemetry.addData("Direction", gyroDirection);
-        telemetry.addData("LOWERED", 1);
-        telemetry.update();
+        driveForward(100, 0.5);
+        driveBackward(100, 0.5);
+        strafeLeft(50, 0.5);
+        strafeRight(50, 0.5);
 
-        rotateLeft(35, gyroDirection);
-        robot.armMotor.setPower(1);
-
-        telemetry.addData("Direction", gyroDirection);
-        telemetry.update();
         sleep(1000);
+        moveForwardLeft(50, 0.5, 45);
+        //moveForwardRight(50,0.5, 45);
+        //moveBackwardRight(50,0.5,45);
+        //moveBackwardLeft(50, 0.5, 45);
 
-        robot.armMotor.setPower(0);
-        telemetry.addData("Direction", gyroDirection);
-        telemetry.update();
-
-        if (checkTensorFlow(1000) == true)
-        {
-            telemetry.addData("MINERAL:", "left");
-            telemetry.update();
-            driveBackward(21, 0.5);
-            sleep(200);
-            rotateRight(30, gyroDirection);
-            driveBackward(20, 0.5);
-            rotateLeft(45,gyroDirection);
-            robot.markerServo.setPosition(MARKER_RELEASED);
-            idle();
-            /*
-            driveForward(5, DRIVE_SPEED);
-            rotateLeft(65,gyroDirection);
-
-            driveBackward(16, 0.5);
-            rotateLeft(42, gyroDirection);
-            driveBackward(50, 0.5);
-            rotateLeft(45,gyroDirection);
-            sleep(200);
-            robot.markerServo.setPosition(LOCK_OPEN);
-            idle();
-            */
-
-        }
-        else {
-            rotateRight(30    , gyroDirection);
-            driveBackward(5, 0.5);
-            if (checkTensorFlow(1000) == true)
-            {
-                telemetry.addData("MINERAL:", "center");
-                telemetry.update();
-                rotateRight(5,gyroDirection);
-                driveBackward(20, 0.5);
-                sleep(200);
-                driveBackward(15,0.5);
-                rotateLeft(60,gyroDirection);
-                driveBackward(5,0.5);
-                robot.markerServo.setPosition(MARKER_RELEASED);
-                idle();
-                /*
-                driveForward(10, DRIVE_SPEED);
-                rotateLeft(115,gyroDirection);
-                */
-            }
-            else {
-                rotateRight(45, gyroDirection);
-                telemetry.addData("MINERAL:", "right");
-                telemetry.update();
-                driveBackward(20, 0.5);
-                sleep(200);
-                rotateLeft(30,gyroDirection);
-                driveBackward(15,0.5);
-                rotateLeft(70,gyroDirection);
-                driveBackward(15,0.5);
-                rotateLeft(20,gyroDirection);
-                robot.markerServo.setPosition(MARKER_RELEASED);
-                idle();
-                /*
-                driveForward(10, DRIVE_SPEED);
-                rotateLeft(150,gyroDirection);
-                */
-            }
-        }
-
-
-        /***    AUTONOMUS ENDS HERE                           ***/
+        /***  AUTONOMUS ENDS HERE                             ***/
         /***                AUTONOMUS ENDS HERE               ***/
         /***                            AUTONOMUS ENDS HERE   ***/
     }
@@ -613,9 +542,9 @@ public class Auto_Ana_Depot extends LinearOpMode {
 
             // Determine new target position, and pass to motor controller
             newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
-            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(-distance * COUNTS_PER_MM);
             newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
-            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(-distance * COUNTS_PER_MM);
 
             robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
             robot.backRightMotor.setTargetPosition(newBackRightTarget);
@@ -630,10 +559,10 @@ public class Auto_Ana_Depot extends LinearOpMode {
 
             // reset the timeout time and start motion.
             runtime.reset();
-            robot.backLeftMotor.setPower(Math.abs(speed));
-            robot.backRightMotor.setPower(Math.abs(speed));
-            robot.frontLeftMotor.setPower(Math.abs(speed));
-            robot.frontRightMotor.setPower(Math.abs(speed));
+            robot.backLeftMotor.setPower(speed);
+            robot.backRightMotor.setPower(-speed);
+            robot.frontLeftMotor.setPower(speed);
+            robot.frontRightMotor.setPower(-speed);
 
             // keep looping while we are still active, and there is time left, and both motors are running.
             // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
@@ -680,13 +609,242 @@ public class Auto_Ana_Depot extends LinearOpMode {
         }
     }
 
+    public void encoderStrafe(double speed, double distance, double timeoutS) {
+        int newBackLeftTarget;
+        int newBackRightTarget;
+        int newFrontLeftTarget;
+        int newFrontRightTarget;
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            // Determine new target position, and pass to motor controller
+            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(-distance * COUNTS_PER_MM);
+            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(-distance * COUNTS_PER_MM);
+            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+
+            robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
+            robot.backRightMotor.setTargetPosition(newBackRightTarget);
+            robot.frontLeftMotor.setTargetPosition(newFrontLeftTarget);
+            robot.frontRightMotor.setTargetPosition(newFrontRightTarget);
+
+            // Turn On RUN_TO_POSITION
+            robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+            runtime.reset();
+            robot.backLeftMotor.setPower(-speed);
+            robot.backRightMotor.setPower(-speed);
+            robot.frontLeftMotor.setPower(speed);
+            robot.frontRightMotor.setPower(speed);
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+            while (opModeIsActive() &&
+                    (runtime.seconds() < timeoutS) &&
+                    (
+                            robot.backLeftMotor.isBusy() && robot.backRightMotor.isBusy() &&
+                                    robot.frontLeftMotor.isBusy() && robot.frontRightMotor.isBusy()
+                    ))
+            {
+
+                // Display it for the driver.
+                telemetry.addData("Path1",  "Running to %7d :%7d :%7d :%7d"
+                        , newFrontLeftTarget, newFrontRightTarget
+                        , newBackLeftTarget, newBackRightTarget
+                );
+                telemetry.addData("Path2",  "Running at %7d :%7d :%7d :%7d",
+                        robot.frontLeftMotor.getCurrentPosition(),
+                        robot.frontRightMotor.getCurrentPosition()
+                        ,
+                        robot.backLeftMotor.getCurrentPosition(),
+                        robot.backRightMotor.getCurrentPosition()
+                );
+                telemetry.update();
+            }
+
+            // Stop all motion;
+            robot.backLeftMotor.setPower(0);
+            robot.backRightMotor.setPower(0);
+            robot.frontLeftMotor.setPower(0);
+            robot.frontRightMotor.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            sleep(250);   // optional pause after each move
+        }
+    }
+
+    public void encoderDiagonal(double speed, double distance, double angle,  double timeoutS) {
+        int newBackLeftTarget;
+        int newBackRightTarget;
+        int newFrontLeftTarget;
+        int newFrontRightTarget;
+
+        double drive = Math.sin(angle);
+        double strafe = Math.cos(angle);
+
+        telemetry.addData("drive", drive);
+        telemetry.addData("strafe", strafe);
+        telemetry.update();
+
+        sleep(5000);
+
+        // Ensure that the opmode is still active
+        if (opModeIsActive()) {
+
+            double backLeftDistance = (- drive - strafe) * 200 * distance * COUNTS_PER_MM;
+            double backRightDistance = (+ drive - strafe) * 200 * distance * COUNTS_PER_MM;
+            double frontLeftDistance = (- drive + strafe) * 200 * distance * COUNTS_PER_MM;
+            double frontRightDistance = (+ drive + strafe) * 200 * distance * COUNTS_PER_MM;
+
+            telemetry.addData("bld", backLeftDistance);
+            telemetry.addData("brd", backRightDistance);
+            telemetry.addData("fld", frontLeftDistance);
+            telemetry.addData("frd", frontRightDistance);
+            telemetry.update();
+
+            sleep(5000);
+
+            // Determine new target position, and pass to motor controller
+            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(backLeftDistance);
+            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(backRightDistance);
+            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(frontLeftDistance);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(frontRightDistance);
+
+            robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
+            robot.backRightMotor.setTargetPosition(newBackRightTarget);
+            robot.frontLeftMotor.setTargetPosition(newFrontLeftTarget);
+            robot.frontRightMotor.setTargetPosition(newFrontRightTarget);
+
+            // Turn On RUN_TO_POSITION
+            robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.backRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+            // reset the timeout time and start motion.
+
+            //Range.clip((+ drive + strafe) * speed, -1.0, 1.0);
+
+            double backLeftSpeed = Range.clip((- drive - strafe) * speed, -1.0, 1.0);
+            double backRightSpeed = Range.clip((+ drive - strafe) * speed, -1.0, 1.0);;
+            double frontLeftSpeed = Range.clip((- drive + strafe) * speed, -1.0, 1.0);
+            double frontRightSpeed = Range.clip((+ drive + strafe) * speed, -1.0, 1.0);
+
+            runtime.reset();
+            robot.backLeftMotor.setPower(backLeftSpeed);
+            robot.backRightMotor.setPower(backRightSpeed);
+            robot.frontLeftMotor.setPower(frontLeftSpeed);
+            robot.frontRightMotor.setPower(frontRightSpeed);
+
+            // keep looping while we are still active, and there is time left, and both motors are running.
+            // Note: We use (isBusy() && isBusy()) in the loop test, which means that when EITHER motor hits
+            // its target position, the motion will stop.  This is "safer" in the event that the robot will
+            // always end the motion as soon as possible.
+            // However, if you require that BOTH motors have finished their moves before the robot continues
+            // onto the next step, use (isBusy() || isBusy()) in the loop test.
+
+            int cnt = 0;
+
+            if (robot.backLeftMotor.isBusy())
+                cnt++;
+            if (robot.backRightMotor.isBusy())
+                cnt++;
+            if (robot.frontLeftMotor.isBusy())
+                cnt++;
+            if (robot.frontRightMotor.isBusy())
+                cnt++;
+
+            while (opModeIsActive() && (runtime.seconds() < timeoutS) && (cnt > 1))
+            {
+                cnt = 0;
+                if (robot.backLeftMotor.isBusy())
+                    cnt++;
+                if (robot.backRightMotor.isBusy())
+                    cnt++;
+                if (robot.frontLeftMotor.isBusy())
+                    cnt++;
+                if (robot.frontRightMotor.isBusy())
+                    cnt++;
+
+                // Display it for the driver.
+                telemetry.addData("Path1",  "Running to %7d :%7d :%7d :%7d"
+                        , newFrontLeftTarget, newFrontRightTarget
+                        , newBackLeftTarget, newBackRightTarget
+                );
+                telemetry.addData("Path2",  "Running at %7d :%7d :%7d :%7d",
+                        robot.frontLeftMotor.getCurrentPosition(),
+                        robot.frontRightMotor.getCurrentPosition()
+                        ,
+                        robot.backLeftMotor.getCurrentPosition(),
+                        robot.backRightMotor.getCurrentPosition()
+                );
+                telemetry.update();
+            }
+
+            // Stop all motion;
+            robot.backLeftMotor.setPower(0);
+            robot.backRightMotor.setPower(0);
+            robot.frontLeftMotor.setPower(0);
+            robot.frontRightMotor.setPower(0);
+
+            // Turn off RUN_TO_POSITION
+            robot.backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            sleep(250);   // optional pause after each move
+        }
+    }
+
     private void driveForward (double distance, double speed)
     {
         encoderDrive(speed, distance,15);
     }
 
     private void driveBackward (double distance, double speed) {
-        encoderDrive(speed, -distance,15);
+        encoderDrive(-speed, -distance,15);
+    }
+
+    private void strafeRight(double distance, double speed) {
+        encoderStrafe(speed, distance, 15);
+    }
+
+    private void strafeLeft (double distance, double speed) {
+        encoderStrafe(-speed, -distance, 15);
+    }
+
+    private void moveForwardRight(double distance, double speed, double angle)
+    {
+        encoderDiagonal(distance, speed, angle, 15);
+    }
+
+    private void moveForwardLeft(double distance, double speed, double angle)
+    {
+        encoderDiagonal(distance, speed, 180 - angle, 15);
+    }
+
+    private void moveBackwardRight(double distance, double speed, double angle)
+    {
+        encoderDiagonal(distance, speed, 180 + angle, 15);
+    }
+
+    private void moveBackwardLeft(double distance, double speed, double angle)
+    {
+        encoderDiagonal(distance, speed, 360 - angle, 15);
     }
 
     private void lowerRobot() {
@@ -695,14 +853,6 @@ public class Auto_Ana_Depot extends LinearOpMode {
         idle();
         encoderArm(0.8, 15, 1, 15);
         robot.armMotor.setPower(0);
-        /**
-        encoderArm(0.8, 15, 1, 15);
-        lockPosition = LOCK_OPEN;
-        robot.lockServo.setPosition(LOCK_OPEN);
-        robot.armMotor.setPower(0.8);
-        idle();
-        sleep(300);
-        robot.armMotor.setPower(0);*/
         sleep(3000);
         telemetry.addData("DONE", 1);
         telemetry.update();

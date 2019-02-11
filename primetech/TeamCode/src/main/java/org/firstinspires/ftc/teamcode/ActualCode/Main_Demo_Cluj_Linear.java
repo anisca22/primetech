@@ -39,7 +39,7 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_CM;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
@@ -220,7 +220,7 @@ public class Main_Demo_Cluj_Linear extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
 
             robot.armMotor.setTargetPosition(armTarget);
 

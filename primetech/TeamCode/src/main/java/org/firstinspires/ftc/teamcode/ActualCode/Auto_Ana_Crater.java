@@ -57,7 +57,7 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.lang.Math.random;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.BIG_TURN_SPEED;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_CM;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.DRIVE_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
@@ -563,7 +563,7 @@ public class Auto_Ana_Crater extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
 
             robot.armMotor.setTargetPosition(armTarget);
 
@@ -604,10 +604,10 @@ public class Auto_Ana_Crater extends LinearOpMode {
         if (opModeIsActive()) {
 
             // Determine new target position, and pass to motor controller
-            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
-            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
-            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
-            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            newBackLeftTarget = robot.backLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            newBackRightTarget = robot.backRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            newFrontLeftTarget = robot.frontLeftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            newFrontRightTarget = robot.frontRightMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
 
             robot.backLeftMotor.setTargetPosition(newBackLeftTarget);
             robot.backRightMotor.setTargetPosition(newBackRightTarget);

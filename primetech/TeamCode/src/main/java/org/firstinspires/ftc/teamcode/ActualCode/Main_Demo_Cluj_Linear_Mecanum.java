@@ -38,7 +38,7 @@ import com.qualcomm.robotcore.util.Range;
 import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 import org.firstinspires.ftc.teamcode.HardwareMecanum;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_CM;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
@@ -92,14 +92,25 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
 
             /**GAMEPAD 1**/
 
-            drive = -gamepad1.left_stick_y;
+            drive = gamepad1.left_stick_y;
             strafe = gamepad1.left_stick_x;
-            turn = gamepad1.right_stick_x;
+            if (gamepad1.left_trigger != 0)
+                turn = -gamepad1.left_trigger;
+            else if (gamepad1.right_trigger != 0)
+                turn = gamepad1.right_trigger;
+            else turn = 0;
+            //turn = gamepad1.right_stick_x;
 
-            frontLeftPower  = Range.clip(+drive - turn + strafe, -1.0, 1.0);
-            frontRightPower = Range.clip(-drive - turn + strafe, -1.0, 1.0);
-            backLeftPower   = Range.clip(+drive - turn - strafe, -1.0, 1.0);
-            backRightPower  = Range.clip(-drive - turn - strafe, -1.0, 1.0);
+            frontLeftPower  = Range.clip(-drive - turn + strafe, -1.0, 1.0);
+            frontRightPower = Range.clip(+drive - turn + strafe, -1.0, 1.0);
+            backLeftPower   = Range.clip(-drive - turn - strafe, -1.0, 1.0);
+            backRightPower  = Range.clip(+drive - turn - strafe, -1.0, 1.0);
+
+            telemetry.addData("FLP", frontLeftPower);
+            telemetry.addData("FRP", frontRightPower);
+            telemetry.addData("BLP", backLeftPower);
+            telemetry.addData("BRP", backRightPower);
+            telemetry.update();
 
             //LOCK SERVO
             if (gamepad1.x)
@@ -169,7 +180,7 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
             // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_CM);
+            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
 
             robot.armMotor.setTargetPosition(armTarget);
 

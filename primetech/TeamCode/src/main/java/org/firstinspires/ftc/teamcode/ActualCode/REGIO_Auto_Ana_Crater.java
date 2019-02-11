@@ -35,7 +35,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
-import com.vuforia.CameraDevice;
 
 import org.firstinspires.ftc.robotcore.external.ClassFactory;
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
@@ -52,12 +51,10 @@ import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 import java.util.List;
 import java.util.Locale;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.BIG_TURN_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.DRIVE_SPEED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
 
@@ -88,9 +85,9 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Auto_Depot", group="Pushbot")
+@Autonomous(name="Auto_Crater_Regio", group="Pushbot")
 ///@Disabled
-public class Auto_Ana_Depot extends LinearOpMode {
+public class REGIO_Auto_Ana_Crater extends LinearOpMode {
 
     /* Declare OpMode members. */
     HardwareDemoCluj robot = new HardwareDemoCluj();   // Use a Pushbot's hardware
@@ -133,7 +130,7 @@ public class Auto_Ana_Depot extends LinearOpMode {
         }
 
         /***FLASH***/
-        //CameraDevice.getInstance().setFlashTorchMode(true);NU AVEM VOIE CU CAMERA
+        //CameraDevice.getInstance().setFlashTorchMode(true); NU AVEM VOIE CU CAMERA
         //CameraDevice.getInstance().setFlashTorchMode(true);
 
 
@@ -189,8 +186,6 @@ public class Auto_Ana_Depot extends LinearOpMode {
         /***                AUTONOMUS STARTS HERE               ***/
         /***                            AUTONOMUS STARTS HERE   ***/
 
-
-
         lowerRobot();
 
         telemetry.addData("Direction", gyroDirection);
@@ -198,7 +193,7 @@ public class Auto_Ana_Depot extends LinearOpMode {
         telemetry.update();
 
         rotateLeft(35, gyroDirection);
-        robot.armMotor.setPower(1);
+        encoderArm(1, 40, 1, 15);
 
         telemetry.addData("Direction", gyroDirection);
         telemetry.update();
@@ -212,13 +207,11 @@ public class Auto_Ana_Depot extends LinearOpMode {
         {
             telemetry.addData("MINERAL:", "left");
             telemetry.update();
-            driveBackward(21, 0.5);
+            driveBackward(21, DRIVE_SPEED);
             sleep(200);
             rotateRight(30, gyroDirection);
-            driveBackward(20, 0.5);
-            rotateLeft(45,gyroDirection);
-            robot.markerServo.setPosition(MARKER_RELEASED);
-            idle();
+            driveBackward(5, DRIVE_SPEED);
+            rotateLeft(180,gyroDirection);
             /*
             driveForward(5, DRIVE_SPEED);
             rotateLeft(65,gyroDirection);
@@ -234,20 +227,16 @@ public class Auto_Ana_Depot extends LinearOpMode {
 
         }
         else {
-            rotateRight(30    , gyroDirection);
+            rotateRight(30, gyroDirection);
             driveBackward(5, 0.5);
             if (checkTensorFlow(1000) == true)
             {
                 telemetry.addData("MINERAL:", "center");
                 telemetry.update();
-                rotateRight(5,gyroDirection);
                 driveBackward(20, 0.5);
                 sleep(200);
-                driveBackward(15,0.5);
-                rotateLeft(60,gyroDirection);
                 driveBackward(5,0.5);
-                robot.markerServo.setPosition(MARKER_RELEASED);
-                idle();
+                rotateLeft(180,gyroDirection);
                 /*
                 driveForward(10, DRIVE_SPEED);
                 rotateLeft(115,gyroDirection);
@@ -260,19 +249,17 @@ public class Auto_Ana_Depot extends LinearOpMode {
                 driveBackward(20, 0.5);
                 sleep(200);
                 rotateLeft(30,gyroDirection);
-                driveBackward(15,0.5);
-                rotateLeft(70,gyroDirection);
-                driveBackward(15,0.5);
-                rotateLeft(20,gyroDirection);
-                robot.markerServo.setPosition(MARKER_RELEASED);
-                idle();
+                driveBackward(5,0.5);
+                rotateLeft(180,gyroDirection);
+
                 /*
                 driveForward(10, DRIVE_SPEED);
                 rotateLeft(150,gyroDirection);
                 */
             }
         }
-
+        driveForward(5,0.5);
+        encoderArm(1, 80, -1, 15);
 
         /***    AUTONOMUS ENDS HERE                           ***/
         /***                AUTONOMUS ENDS HERE               ***/
@@ -540,7 +527,6 @@ public class Auto_Ana_Depot extends LinearOpMode {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
     }
-
 
     String formatAngle(AngleUnit angleUnit, double angle) {
         return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
