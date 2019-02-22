@@ -29,60 +29,57 @@
 
 package org.firstinspires.ftc.robotcontroller.external.samples;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DigitalChannel;
+import com.qualcomm.robotcore.hardware.CRServo;
 
-/*
- * This is an example LinearOpMode that shows how to use
- * a REV Robotics Touch Sensor.
+/**
+ * This OpMode scans a single servo back and forwards until Stop is pressed.
+ * The code is structured as a LinearOpMode
+ * INCREMENT sets how much to increase/decrease the servo position each cycle
+ * CYCLE_MS sets the update period.
  *
- * It assumes that the touch sensor is configured with a name of "digitalTouch".
+ * This code assumes a Servo configured with the name "left claw" as is found on a pushbot.
+ *
+ * NOTE: When any servo position is set, ALL attached servos are activated, so ensure that any other
+ * connected servos are able to move freely before running this test.
  *
  * Use Android Studio to Copy this Class, and Paste it into your team's code folder with a new name.
- * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list.
+ * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
-@TeleOp(name = "Sensor: Digital touch", group = "Sensor")
+@TeleOp(name = "Concept: Scan Cont Servo", group = "Concept")
 //@Disabled
-public class SensorDigitalTouch extends LinearOpMode {
-    /**
-     * The REV Robotics Touch Sensor
-     * is treated as a digital channel.  It is HIGH if the button is unpressed.
-     * It pulls LOW if the button is pressed.
-     *
-     * Also, when you connect a REV Robotics Touch Sensor to the digital I/O port on the
-     * Expansion Hub using a 4-wire JST cable, the second pin gets connected to the Touch Sensor.
-     * The lower (first) pin stays unconnected.*
-     */
+public class ConceptScanContServo extends LinearOpMode {
 
-    DigitalChannel digitalTouch;  // Hardware Device Object
-
+    // Define class members
+    CRServo colector;
     @Override
     public void runOpMode() {
 
-        // get a reference to our digitalTouch object.
-        digitalTouch = hardwareMap.get(DigitalChannel.class, "touch");
+        colector = hardwareMap.get(CRServo.class, "collector");
 
-        // set the digital channel to input.
-        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
-
-        // wait for the start button to be pressed.
+        telemetry.addData(">", "Press Start to scan Servo." );
+        telemetry.update();
         waitForStart();
 
-        // while the op mode is active, loop and read the light levels.
-        // Note we use opModeIsActive() as our loop condition because it is an interruptible method.
-        while (opModeIsActive()) {
 
-            // send the info back to driver station using telemetry function.
-            // if the digital channel returns true it's HIGH and the button is unpressed.
-            if (digitalTouch.getState() == true) {
-                telemetry.addData("Digital Touch", "Is Not Pressed");
-            } else {
-                telemetry.addData("Digital Touch", "Is Pressed");
+        // Scan servo till stop pressed.
+        while(opModeIsActive()){
+
+            // slew the servo, according to the rampUp (direction) variable.
+            if (gamepad1.a) {
+                colector.setPower(1);
             }
+            else if (gamepad1.b){
+               colector.setPower(-1);
+            }
+            else colector.setPower(0);
 
-            telemetry.update();
+            idle();
         }
+
+        // Signal done;
+        telemetry.addData(">", "Done");
+        telemetry.update();
     }
 }
