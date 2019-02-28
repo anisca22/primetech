@@ -32,6 +32,7 @@ package org.firstinspires.ftc.teamcode.ActualCode;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -89,7 +90,7 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
  */
 
 @Autonomous(name="Auto_Depot", group="Pushbot")
-///@Disabled
+@Disabled
 public class Auto_Ana_Depot extends LinearOpMode {
 
     /* Declare OpMode members. */

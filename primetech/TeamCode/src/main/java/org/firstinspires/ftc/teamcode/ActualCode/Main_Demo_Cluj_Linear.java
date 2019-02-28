@@ -60,7 +60,7 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
  */
 
 @TeleOp(name="Cluj_Linear", group="Linear Opmode")
-//@Disabled
+@Disabled
 public class Main_Demo_Cluj_Linear extends LinearOpMode {
 
     // Declare OpMode members.

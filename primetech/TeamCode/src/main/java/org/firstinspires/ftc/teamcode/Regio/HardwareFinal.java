@@ -30,6 +30,7 @@
 package org.firstinspires.ftc.teamcode.Regio;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -67,19 +68,22 @@ public class HardwareFinal
     ///DECLARARE SERVOURI
     public Servo latchServo;
     public Servo mineralServo;
-    public Servo transmissionServo;
+    //public Servo transmissionServo;
+
+    public static final double      DRIVE_SPEED = 1;
+    public static final double      TURN_SPEED = 0.5;
 
     ///LATCH LOCK VARIABLES
-    public static final double      LATCH_LOCK_CLOSED = 0;
+    public static final double      LATCH_LOCK_CLOSED = 0.9;
     public static final double      LATCH_LOCK_OPEN = 1;
 
     ///MINERAL LOCK VARIABLES
-    public static final double      MINERAL_LOCK_CLOSED = 0;
+    public static final double      MINERAL_LOCK_CLOSED = 0.5;
     public static final double      MINERAL_LOCK_OPEN = 1;
 
     ///TRANSMISSION LOCK VARIABLES
-    public static final double      TRANSMISSION_LOCK_LATCH = 0;
-    public static final double      TRANSMISSION_LOCK_MINERAL = 1;
+    //public static final double      TRANSMISSION_LOCK_LATCH = 0;
+    //public static final double      TRANSMISSION_LOCK_MINERAL = 1;
 
     ///ENCODER VARIABLES
     public static final double     COUNTS_PER_MOTOR_REV    = 1120 ;    // eg: TETRIX Motor Encoder 1440 tetrix
@@ -87,6 +91,7 @@ public class HardwareFinal
     public static final double     WHEEL_DIAMETER_MM   = 4.0 * 25.4;     // For figuring circumference
     public static final double     COUNTS_PER_MM         = (COUNTS_PER_MOTOR_REV * DRIVE_GEAR_REDUCTION) /
             (WHEEL_DIAMETER_MM * 3.1415);
+
 
     /* Local OpMode members. */
     HardwareMap hwMap  = null;
@@ -113,7 +118,7 @@ public class HardwareFinal
         //DEFINIRE SERVOURI
         latchServo = hwMap.get(Servo.class, "latchServo");
         mineralServo = hwMap.get(Servo.class, "mineralServo");
-        transmissionServo = hwMap.get(Servo.class, "transmissionServo");
+        //transmissionServo = hwMap.get(Servo.class, "transmissionServo");
 
         // SETARE DIRECTIE
         frontLeftMotor.setDirection(DcMotor.Direction.FORWARD);
@@ -121,7 +126,7 @@ public class HardwareFinal
         frontRightMotor.setDirection(DcMotor.Direction.FORWARD);
         backRightMotor.setDirection(DcMotor.Direction.FORWARD);
 
-        armMotor.setDirection(DcMotor.Direction.REVERSE);
+        armMotor.setDirection(DcMotor.Direction.FORWARD);
 
         // PUTERE 0
         frontLeftMotor.setPower(0);
@@ -134,7 +139,7 @@ public class HardwareFinal
         // SETARE POZITIE SERVO
         latchServo.setPosition(LATCH_LOCK_CLOSED);
         mineralServo.setPosition(MINERAL_LOCK_CLOSED);
-        transmissionServo.setPosition(TRANSMISSION_LOCK_LATCH);
+        //transmissionServo.setPosition(TRANSMISSION_LOCK_LATCH);
 
     }
 

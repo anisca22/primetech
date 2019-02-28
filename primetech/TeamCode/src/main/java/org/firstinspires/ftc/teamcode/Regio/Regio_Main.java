@@ -27,23 +27,21 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.ActualCode;
+package org.firstinspires.ftc.teamcode.Regio;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 import org.firstinspires.ftc.teamcode.HardwareMecanum;
 
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_OPEN;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_OPEN;
 
 
 /**
@@ -59,17 +57,13 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Cluj_Linear_Mecanum", group="Linear Opmode")
-@Disabled
-public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
+@TeleOp(name="Regio_Main", group="Linear Opmode")
+//@Disabled
+public class Regio_Main extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
     double armPower = 0;
-    double markerPosition = MARKER_START;
-    double lockPosition = LOCK_CLOSED;
-    double leftPower = 0;
-    double rightPower = 0;
     double drive = 0;
     double turn = 0;
     double strafe = 0;
@@ -77,7 +71,12 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
     double frontRightPower = 0;
     double backLeftPower = 0;
     double backRightPower = 0;
-    HardwareMecanum robot = new HardwareMecanum();
+    double extenderPower = 0;
+    double collectorPower = 0;
+    double latchPosition = LATCH_LOCK_CLOSED;
+    double minerealPosition = MINERAL_LOCK_CLOSED;
+
+    HardwareFinal robot = new HardwareFinal();
 
     @Override
     public void runOpMode() {
@@ -85,16 +84,21 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
-        waitForStart();
+        while (!opModeIsActive() && !isStopRequested())
+        {
+            telemetry.addData("Status", "Waiting for start");
+            telemetry.update();
+        }
         runtime.reset();
 
         // run until the end of the match (driver presses STOP)
-        while (opModeIsActive()) {
+        while (opModeIsActive() && !isStopRequested()) {
 
             /**GAMEPAD 1**/
 
-            drive = gamepad1.left_stick_y;
-            strafe = gamepad1.left_stick_x;
+            ///Drive
+            drive = -gamepad1.left_stick_y;
+            strafe = -gamepad1.left_stick_x;
             if (gamepad1.left_trigger != 0)
                 turn = -gamepad1.left_trigger;
             else if (gamepad1.right_trigger != 0)
@@ -107,35 +111,37 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
             backLeftPower   = Range.clip(-drive - turn - strafe, -1.0, 1.0);
             backRightPower  = Range.clip(+drive - turn - strafe, -1.0, 1.0);
 
-            telemetry.addData("FLP", frontLeftPower);
-            telemetry.addData("FRP", frontRightPower);
-            telemetry.addData("BLP", backLeftPower);
-            telemetry.addData("BRP", backRightPower);
-            telemetry.update();
-
-            //LOCK SERVO
-            if (gamepad1.x)
-                lockPosition = LOCK_OPEN;
-            else if (gamepad1.y)
-                lockPosition = LOCK_CLOSED;
-
-            /**GAMEPAD 2**/
-
-            //MARKER SERVO
-            if (gamepad1.a)
-                markerPosition = MARKER_RELEASED;
-            else if (gamepad1.b)
-                markerPosition = MARKER_START;
-
-            //RIDICARE BRAT MANUAL
+            ///Arm
             if (gamepad1.dpad_up)
                 armPower = 1;
             else if (gamepad1.dpad_down)
                 armPower = -1;
-            else if (!(gamepad1.dpad_up ||gamepad1.dpad_down))
-                armPower = 0;
+            else armPower = 0;
 
-            robot.armMotor.setPower(armPower);
+            if (gamepad1.b)
+                latchPosition = LATCH_LOCK_CLOSED;
+            else if (gamepad1.a)
+                latchPosition = LATCH_LOCK_OPEN;
+
+            /**GAMEPAD 2**/
+
+            if (gamepad2.left_stick_x != 0)
+                extenderPower = gamepad2.left_stick_x;
+            else extenderPower = 0;
+
+            if (gamepad2.dpad_up)
+                minerealPosition = MINERAL_LOCK_OPEN;
+            else if (gamepad2.dpad_down)
+                minerealPosition = MINERAL_LOCK_CLOSED;
+
+            if (gamepad2.x)
+                collectorPower = -1;
+            else if (gamepad2.b)
+                collectorPower = 1;
+            else if (gamepad2.a)
+                collectorPower = 0;
+
+            /**PUTERI**/
 
             // PUTERE LA MOTOARE DE DEPLASARE
             robot.backLeftMotor.setPower(backLeftPower);
@@ -143,10 +149,12 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
             robot.backRightMotor.setPower(backRightPower);
             robot.frontRightMotor.setPower(frontRightPower);
 
-            //POZITIONARE SERVOURI
-            robot.markerServo.setPosition(markerPosition);
-            robot.lockServo.setPosition(lockPosition);
+            robot.extenderMotor.setPower(extenderPower);
+            robot.armMotor.setPower(armPower);
+            robot.collectionMotor.setPower(collectorPower);
 
+            robot.latchServo.setPosition(latchPosition);
+            robot.mineralServo.setPosition(minerealPosition);
         }
 
         stopItDude();
@@ -163,9 +171,6 @@ public class Main_Demo_Cluj_Linear_Mecanum extends LinearOpMode {
         //OPRIT MOTORUL DE RIDICARE
         robot.armMotor.setPower(0);
 
-        //SETARE POZITIE SERVOURI DE SFARSIT
-        robot.lockServo.setPosition(LOCK_CLOSED);
-        robot.markerServo.setPosition(MARKER_START);
     }
 
     public void encoderArm(double speed, double distance, double direction, double timeoutS) {

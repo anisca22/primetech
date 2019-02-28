@@ -27,12 +27,13 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.ActualCode;
+package org.firstinspires.ftc.teamcode.Regio;
+
+import android.drm.DrmInfoRequest;
 
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -49,18 +50,15 @@ import org.firstinspires.ftc.robotcore.external.navigation.Velocity;
 import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
 import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
 import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
-import org.firstinspires.ftc.teamcode.HardwareDemoCluj;
 import org.firstinspires.ftc.teamcode.HardwareMecanum;
 
 import java.util.List;
 import java.util.Locale;
 
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_CLOSED;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.LOCK_OPEN;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_RELEASED;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.MARKER_START;
-import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.COUNTS_PER_MM;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.DRIVE_SPEED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_OPEN;
 
 /**
  * This file illustrates the concept of driving a path based on encoder counts.
@@ -89,17 +87,16 @@ import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.TURN_SPEED;
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@Autonomous(name="Auto_Crater_Regio", group="Pushbot")
-@Disabled
-public class REGIO_Auto_Ana_Crater extends LinearOpMode {
+@Autonomous(name="Depot", group="Pushbot")
+///@Disabled
+public class Final_Auto_Depot extends LinearOpMode {
 
     /* Declare OpMode members. */
-    HardwareMecanum robot = new HardwareMecanum();   // Use a Pushbot's hardware
+    HardwareFinal robot = new HardwareFinal();   // Use a Pushbot's hardware
     Orientation angles;
     BNO055IMU imu;
     double gyroDirection = 0;
-    double markerPosition = MARKER_START;
-    double lockPosition = LOCK_CLOSED;
+    double lockPosition = LATCH_LOCK_CLOSED;
 
     int goldPosition = 0;
 
@@ -108,7 +105,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
     private static final String TFOD_MODEL_ASSET = "RoverRuckus.tflite";
     private static final String LABEL_GOLD_MINERAL = "Gold Mineral";
     private static final String LABEL_SILVER_MINERAL = "Silver Mineral";
-    private static final String VUFORIA_KEY = "AddjBXL/////AAAAmcN61ZHW80IvtUwvfesWZa5JrV9AQn+mphNUco4vRSptOi8UXRpia2gnoLyZrCakLsIEUTD6Z84YWrKm3hjsUcsq8XuiTCxroeAOz4ExDes3eBcnsXsEWud++ymX1jCUgGt4sBHuRh7J0BZ+mj4ATIsXcBHf/SlWjmkKavc0vSqfwR6owMJPBzs0tv49k//jc6JJh2pKREB6YGUBUjlTsroX1qGvxxLHLTTHog1tmBe7cvsa+jQAGtn7kItK/quRF9DQqDGo9dc3UlPUbhwX5O9V4cdOt0r45C62g6Buj47mxVzzz5XurgeGYF1dMhLyl4toN5mCi03wUb+L1/X1pBGPNWwD3guQzUy7pGPjQlYw";
+    private static final String VUFORIA_KEY = "AZdEGAb/////AAABmZ4AF6SZ9UY4tTSsTIZJ44oEW7p8rxW7ag25tT3UZ/fuIsUS/lDsxQlWoG+guqvqmGpsx6Uut/kOGSXDvbaZ92ttTmKtyFS9V1V6LIscYnPO73m6a5FK9WOq3/4xNyyEU1fLmRjmPlO1A2Yg9GtgWPmt8xqcblGsOgjg3rO6/BfXbPXtPLmHgePVwp/FCwEpGb7czfi5AIYcaazuOLKl6DTFzXdq1vlhr/1SZQlfhYOR74ECNclPfQXuLk+AOEoUyWvVemG/gdh1StRGIdUy0upbeM+bKqhOUqUvKC4MasSoQ4REok9uLmsZXxbpEnWiJ1ZbGACRgTb7SdYOY9mFLlkOoV5mPJ6DcGssF1Pkbwzj";
     private VuforiaLocalizer vuforia;
     private TFObjectDetector tfod;
 
@@ -170,10 +167,11 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             tfod.activate();
         }
 
-        telemetry.addData(">", "Robot Ready.");    //
-        telemetry.update();
-
-        waitForStart();
+        while (!opModeIsActive() && !isStopRequested())
+        {
+            telemetry.addData("Status:", "Wait for start");
+            telemetry.update();
+        }
 
         runtime.reset();
 
@@ -181,23 +179,72 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
         /***                AUTONOMUS STARTS HERE               ***/
         /***                            AUTONOMUS STARTS HERE   ***/
 
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double start = noformatAngle(angles.angleUnit, angles.firstAngle);
 
         goldPosition = checkTensorFlow(1000);
         lowerRobot();
 
-        if (goldPosition == 1) /**      RIGHT       **/
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+
+        telemetry.addData("DIFFERENCE", heading -start);
+        telemetry.update();
+
+        strafeRight(50, DRIVE_SPEED);
+
+        rotateRight(heading - start + 60);
+
+        encoderArm(1, 500, -1, 15);///CLOSE
+
+
+        if (goldPosition == 1) //RIGHT
+        {
+            rotateRight(10);
+            encoderMainDiagonal(DRIVE_SPEED, -400, 15);
+        }
+        else if (goldPosition == -1) //LEFT
+        {
+            driveForward(100, DRIVE_SPEED);
+            strafeLeft(100, DRIVE_SPEED);
+            rotateLeft(10);
+            driveForward(150,DRIVE_SPEED);
+        }
+        else //CENTER
+        {
+            rotateRight(5);
+            driveForward(50, DRIVE_SPEED);
+            encoderSecondaryDiagonal(DRIVE_SPEED, -120, 15);
+            strafeLeft(50, DRIVE_SPEED);
+            driveForward(250, DRIVE_SPEED);
+
+            rotateRight(160);
+            robot.armMotor.setPower(1);
+            driveBackward(80, DRIVE_SPEED);
+            robot.armMotor.setPower(0);
+            encoderArm(1, 400, 1, 15);
+
+        }
+
+
+        //encoderArm(1, 1300, 1, 15);
+        ///encoderSecondaryDiagonal(DRIVE_SPEED, 50, 15);
+        ///encoderSecondaryDiagonal(DRIVE_SPEED, -50, 15);
+
+        /**
+        if (goldPosition == 1) //RIGHT
         {
             moveBackwardRight(100, 0.5);
         }
-        else if (goldPosition == 1) /**      LEFT       **/
+        else if (goldPosition == 1) //LEFT
         {
             moveBackwardLeft(100, 0.5);
         }
-        else /**      CENTER       **/
+        else //CENTER
         {
             driveBackward(100, 0.5);
         }
-
+            */
         /***  AUTONOMUS ENDS HERE                             ***/
         /***                AUTONOMUS ENDS HERE               ***/
         /***                            AUTONOMUS ENDS HERE   ***/
@@ -278,80 +325,90 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
     private void rotation(double target) {
         angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
         double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        target = heading + target;
+        double distance = Math.abs(heading - target);
+        double direction = 0;
 
-        if (target > 0)
+        while (distance > 5 && opModeIsActive() && !isStopRequested())
         {
-            while (heading < 0 && opModeIsActive())
-                heading += 360;
-            while (heading > 360 && opModeIsActive())
-                heading -= 360;
-        }
-        else //if (target < 0)
-        {
-            while (heading > 0 && opModeIsActive())
-                heading -= 360;
-            while (heading < -360 && opModeIsActive())
-                heading += 360;
-        }
-        while (Math.abs(heading - target) > 5 && opModeIsActive())
-        {
-            if (target > 0)
+            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+            heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+            telemetry.addData("Heading", heading);
+            telemetry.update();
+            if (Math.abs(heading - target) < 180)
             {
-                if (heading > target)
+                if (target > heading)
                 {
-                    robot.backLeftMotor.setPower(-TURN_SPEED);
-                    robot.frontLeftMotor.setPower(-TURN_SPEED);
-                    robot.backRightMotor.setPower(TURN_SPEED);
-                    robot.frontRightMotor.setPower(TURN_SPEED);
+                    distance = target - heading;
+                    direction = 1; ///DREAPTA
                 }
-                else if (heading < target)
+                else
                 {
-                    robot.backLeftMotor.setPower(TURN_SPEED);
-                    robot.frontLeftMotor.setPower(TURN_SPEED);
-                    robot.backRightMotor.setPower(-TURN_SPEED);
-                    robot.frontRightMotor.setPower(-TURN_SPEED);
+                    distance = heading - target;
+                    direction = -1; ///STANGA
                 }
             }
             else
             {
-                if (heading < target)
+                if (target > heading)
                 {
-                    robot.backLeftMotor.setPower(-TURN_SPEED);
-                    robot.frontLeftMotor.setPower(-TURN_SPEED);
-                    robot.backRightMotor.setPower(TURN_SPEED);
-                    robot.frontRightMotor.setPower(TURN_SPEED);
+                    distance = heading - target + 360;
+                    direction = -1; ///STANGA
                 }
-                else if (heading > target)
+                else
                 {
-                    robot.backLeftMotor.setPower(TURN_SPEED);
-                    robot.frontLeftMotor.setPower(TURN_SPEED);
-                    robot.backRightMotor.setPower(-TURN_SPEED);
-                    robot.frontRightMotor.setPower(-TURN_SPEED);
+                    distance = target - heading + 360;
+                    direction = 1; ///DREAPTA
                 }
-
             }
 
-            telemetry.addData("STEP", 1);
-            telemetry.addData("Difference", Math.abs(heading - target));
-            telemetry.addData("Heading", heading);
-            telemetry.addData("Target", target);
-            telemetry.update();
+            robot.backLeftMotor.setPower(HardwareFinal.TURN_SPEED * direction);
+            robot.frontLeftMotor.setPower(HardwareFinal.TURN_SPEED * direction);
+            robot.backRightMotor.setPower(HardwareFinal.TURN_SPEED * direction);
+            robot.frontRightMotor.setPower(HardwareFinal.TURN_SPEED * direction);
+
+        }
+
+        /*** CLOSER ***/
+
+        while (distance > 1 && opModeIsActive() && !isStopRequested())
+        {
             angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
             heading = noformatAngle(angles.angleUnit, angles.firstAngle);
-            if (target > 0)
+            telemetry.addData("Heading", heading);
+            telemetry.update();
+            if (Math.abs(heading - target) < 180)
             {
-                while (heading < 0 && opModeIsActive())
-                    heading += 360;
-                while (heading > 360 && opModeIsActive())
-                    heading -= 360;
+                if (target > heading)
+                {
+                    distance = target - heading;
+                    direction = 1; ///DREAPTA
+                }
+                else
+                {
+                    distance = heading - target;
+                    direction = -1; ///STANGA
+                }
             }
-            else //if (target < 0)
+            else
             {
-                while (heading > 0 && opModeIsActive())
-                    heading -= 360;
-                while (heading < -360 && opModeIsActive())
-                    heading += 360;
+                if (target > heading)
+                {
+                    distance = heading - target + 360;
+                    direction = -1; ///STANGA
+                }
+                else
+                {
+                    distance = target - heading + 360;
+                    direction = 1; ///DREAPTA
+                }
             }
+
+            robot.backLeftMotor.setPower(HardwareFinal.TURN_SPEED / 2 * direction);
+            robot.frontLeftMotor.setPower(HardwareFinal.TURN_SPEED / 2  * direction);
+            robot.backRightMotor.setPower(HardwareFinal.TURN_SPEED / 2 * direction);
+            robot.frontRightMotor.setPower(HardwareFinal.TURN_SPEED / 2 * direction);
+
         }
 
         robot.backLeftMotor.setPower(0);
@@ -359,126 +416,15 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
         robot.backRightMotor.setPower(0);
         robot.frontRightMotor.setPower(0);
 
-        if (target > 0)
-        {
-            while (heading < 0 && opModeIsActive())
-                heading += 360;
-            while (heading > 360 && opModeIsActive())
-                heading -= 360;
-        }
-        else //if (target < 0)
-        {
-            while (heading > 0 && opModeIsActive())
-                heading -= 360;
-            while (heading < -360 && opModeIsActive())
-                heading += 360;
-        }
-
-        while ((Math.abs(heading - target) > 1) && opModeIsActive())
-        {
-            if (target > 0)
-            {
-                if (heading > target)
-                {
-                    robot.backLeftMotor.setPower(-TURN_SPEED);
-                    robot.frontLeftMotor.setPower(-TURN_SPEED);
-                    robot.backRightMotor.setPower(TURN_SPEED);
-                    robot.frontRightMotor.setPower(TURN_SPEED);
-                }
-                else if (heading < target)
-                {
-                    robot.backLeftMotor.setPower(TURN_SPEED);
-                    robot.frontLeftMotor.setPower(TURN_SPEED);
-                    robot.backRightMotor.setPower(-TURN_SPEED);
-                    robot.frontRightMotor.setPower(-TURN_SPEED);
-                }
-            }
-            else
-            {
-                if (heading < target)
-                {
-                    robot.backLeftMotor.setPower(-TURN_SPEED);
-                    robot.frontLeftMotor.setPower(-TURN_SPEED);
-                    robot.backRightMotor.setPower(TURN_SPEED);
-                    robot.frontRightMotor.setPower(TURN_SPEED);
-                }
-                else if (heading > target)
-                {
-                    robot.backLeftMotor.setPower(TURN_SPEED);
-                    robot.frontLeftMotor.setPower(TURN_SPEED);
-                    robot.backRightMotor.setPower(-TURN_SPEED);
-                    robot.frontRightMotor.setPower(-TURN_SPEED);
-                }
-
-            }
-
-            telemetry.addData("STEP", 2);
-            telemetry.addData("Difference", Math.abs(heading - target));
-            telemetry.addData("Heading", heading);
-            telemetry.addData("Target", target);
-            telemetry.update();
-            angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-            heading = noformatAngle(angles.angleUnit, angles.firstAngle);
-            if (target > 0)
-            {
-                while (heading < 0 && opModeIsActive())
-                    heading += 360;
-                while (heading > 360 && opModeIsActive())
-                    heading -= 360;
-            }
-            else //if (target < 0)
-            {
-                while (heading > 0 && opModeIsActive())
-                    heading -= 360;
-                while (heading < -360 && opModeIsActive())
-                    heading += 360;
-            }
-        }
-
-        robot.backLeftMotor.setPower(0);
-        robot.frontLeftMotor.setPower(0);
-        robot.backRightMotor.setPower(0);
-        robot.frontRightMotor.setPower(0);
     }
 
-    private void rotateLeft (double angle, double heading) {
-        telemetry.addData("Heading", heading);
-        telemetry.addData("NewDir", heading - angle);
-        telemetry.update();
-        //sleep(1000);
-        while (heading < 0 && opModeIsActive())
-            heading += 360;
-        while (heading > 360 && opModeIsActive())
-            heading -= 360;
-        while (angle < 0 && opModeIsActive())
-            angle += 360;
-        while (angle > 360 && opModeIsActive())
-            angle -= 360;
-        double diff = heading + angle;
-        rotation(diff);
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
+    private void rotateLeft (double angle) {
+        rotation(+ angle);
     }
 
-    private void rotateRight (double angle, double heading){
-        telemetry.addData("Heading", heading);
-        telemetry.addData("NewDir", heading - angle);
-        telemetry.update();
-        //sleep(1000);
-        while (heading < 0 && opModeIsActive())
-            heading += 360;
-        while (heading > 360 && opModeIsActive())
-            heading -= 360;
-        while (angle < 0 && opModeIsActive())
-            angle += 360;
-        while (angle > 360 && opModeIsActive())
-            angle -= 360;
-        double diff = heading - angle;
-        rotation(diff);
-        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
-        gyroDirection = noformatAngle(angles.angleUnit, angles.firstAngle);
+    private void rotateRight (double angle){
+        rotation(- angle);
     }
-
     String formatAngle(AngleUnit angleUnit, double angle) {
         return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
     }
@@ -536,7 +482,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
 
-            sleep(250);   // optional pause after each move
+            //sleep(250);   // optional pause after each move
         }
     }
 
@@ -613,7 +559,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            sleep(250);   // optional pause after each move
+            //sleep(250);   // optional pause after each move
         }
     }
 
@@ -690,7 +636,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            sleep(250);   // optional pause after each move
+            //sleep(250);   // optional pause after each move
         }
     }
 
@@ -752,7 +698,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            sleep(250);   // optional pause after each move
+            //sleep(250);   // optional pause after each move
         }
     }
 
@@ -793,7 +739,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             robot.backRightMotor.setPower(0);
 
             while (opModeIsActive() && (runtime.seconds() < timeoutS) &&
-                    (robot.frontLeftMotor.isBusy() && robot.backRightMotor.isBusy()) )
+                    (robot.frontRightMotor.isBusy() && robot.backLeftMotor.isBusy()) )
             {
                 telemetry.addData("FLM has", newFrontRightTarget - robot.frontRightMotor.getCurrentPosition());
                 telemetry.addData("BRM has", newBackLeftTarget - robot.backLeftMotor.getCurrentPosition());
@@ -812,7 +758,7 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
             robot.frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             robot.frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-            sleep(250);   // optional pause after each move
+            //sleep(250);   // optional pause after each move
         }
     }
 
@@ -940,19 +886,19 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
 
     private void driveForward (double distance, double speed)
     {
-        encoderDrive(speed, distance,15);
+        encoderDrive(speed, -distance,15);
     }
 
     private void driveBackward (double distance, double speed) {
-        encoderDrive(-speed, -distance,15);
+        encoderDrive(-speed, distance,15);
     }
 
     private void strafeRight(double distance, double speed) {
-        encoderStrafe(speed, distance, 15);
+        encoderStrafe(speed, -distance, 15);
     }
 
     private void strafeLeft (double distance, double speed) {
-        encoderStrafe(-speed, -distance, 15);
+        encoderStrafe(-speed, distance, 15);
     }
 
     private void moveForwardRight(double distance, double speed) {
@@ -972,15 +918,17 @@ public class REGIO_Auto_Ana_Crater extends LinearOpMode {
     }
 
     private void lowerRobot() {
-        lockPosition = LOCK_OPEN;
-        robot.lockServo.setPosition(LOCK_OPEN);
+        lockPosition = LATCH_LOCK_OPEN;
+        robot.latchServo.setPosition(LATCH_LOCK_OPEN);
         idle();
-        encoderArm(0.8, 150, 1, 15);
+        encoderArm(1, 150, -1, 15);///CLOSE
+        encoderArm( 1, 2800, 1, 15);///UNLATCH
+        /**
         robot.armMotor.setPower(0);
         sleep(3000);
         telemetry.addData("DONE", 1);
         telemetry.update();
-        encoderArm(1, 150, -1, 15);
+        encoderArm(1, 150, -1, 15);-*/
     }
 }
 
