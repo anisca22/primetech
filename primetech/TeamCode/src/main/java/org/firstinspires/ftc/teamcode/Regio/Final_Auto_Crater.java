@@ -190,53 +190,103 @@ public class Final_Auto_Crater extends LinearOpMode {
 
         telemetry.addData("DIFFERENCE", heading -start);
         telemetry.update();
-        sleep(5000);
+        //sleep(5000);
 
-        rotateRight(heading - start);
-         strafeRight(50, DRIVE_SPEED);
+        driveBackward(40, DRIVE_SPEED / 5);
+        //rotateRight(heading - start);
+        strafeLeft(70, DRIVE_SPEED);
+        driveForward(50, DRIVE_SPEED);
+
 
          if (goldPosition == 1) //RIGHT
          {
+         strafeRight(120, DRIVE_SPEED);
          rotateRight(10);
-         encoderMainDiagonal(DRIVE_SPEED, -400, 15);
+         encoderMainDiagonal(DRIVE_SPEED, -350, 15);
+
+         ///FINISH SAMPLING
+
+         driveBackward(70, DRIVE_SPEED);
+         //rotateRight(90);
+
          }
          else if (goldPosition == -1) //LEFT
          {
-         driveForward(100, DRIVE_SPEED);
-         strafeLeft(100, DRIVE_SPEED);
-         rotateLeft(10);
-         driveForward(150,DRIVE_SPEED);
+
+         //strafeRight(100, DRIVE_SPEED);
+         //driveForward(100, DRIVE_SPEED);
+         //strafeLeft(100, DRIVE_SPEED);
+             encoderSecondaryDiagonal(DRIVE_SPEED, -150, 15);
+             strafeRight(40, DRIVE_SPEED);
+             rotateRight(5);
+             encoderSecondaryDiagonal(DRIVE_SPEED, -250, 15);
+             // rotateLeft(20);
+             //driveForward(120,DRIVE_SPEED);
+
+         ///FINISH SAMPLING
+
+         driveBackward(70, DRIVE_SPEED);
+         //rotateRight(90);
          }
          else //CENTER
          {
-         rotateRight(5);
-         driveForward(50, DRIVE_SPEED);
-         encoderSecondaryDiagonal(DRIVE_SPEED, -120, 15);
-         driveForward(250, DRIVE_SPEED);
+         strafeRight(70, DRIVE_SPEED);
+         // rotateRight(5);
+         driveForward(200, DRIVE_SPEED);
+         //encoderSecondaryDiagonal(DRIVE_SPEED, -120, 15);
+         //driveForward(100, DRIVE_SPEED);
+
+         ///FINISH SAMPLING
+
+         driveBackward(70, DRIVE_SPEED);
+         //rotateRight(90);
+
          }
 
-         ///encoderSecondaryDiagonal(DRIVE_SPEED, 50, 15);
-         ///encoderSecondaryDiagonal(DRIVE_SPEED, -50, 15);
+         //driveBackward(200, DRIVE_SPEED/3);
+         //rotateRight(45);
 
-         /**
-         if (goldPosition == 1) //RIGHT
-         {
-         moveBackwardRight(100, 0.5);
-         }
-         else if (goldPosition == 1) //LEFT
-         {
-         moveBackwardLeft(100, 0.5);
-         }
-         else //CENTER
-         {
-         driveBackward(100, 0.5);
-         }
-         */
+         //driveTouch(DRIVE_SPEED/3, -1, 15);
+
         /***  AUTONOMUS ENDS HERE                             ***/
         /***                AUTONOMUS ENDS HERE               ***/
         /***                            AUTONOMUS ENDS HERE   ***/
     }
 
+
+    public void printHeading()
+    {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        telemetry.addData("HEADING:", heading);
+        telemetry.update();
+    }
+
+    public void driveTouch(double speed, double direction, double timeout)
+    {
+        if (opModeIsActive() && !isStopRequested())
+        {
+            robot.backLeftMotor.setPower(- direction * speed);
+            robot.backRightMotor.setPower(direction * speed);
+            robot.frontLeftMotor.setPower(- direction * speed);
+            robot.frontRightMotor.setPower(direction * speed);
+            while (robot.digitalTouch.getState() == true && opModeIsActive() && !isStopRequested())
+                sleep(1);
+            robot.backLeftMotor.setPower(0);
+            robot.backRightMotor.setPower(0);
+            robot.frontLeftMotor.setPower(0);
+            robot.frontRightMotor.setPower(0);
+        }
+    }
+
+    public void isPressed()
+    {
+        if (robot.digitalTouch.getState() == true) {
+            telemetry.addData("Digital Touch", "Is Not Pressed");
+        } else {
+            telemetry.addData("Digital Touch", "Is Pressed");
+        }
+    }
 
     public int checkTensorFlow(int T) {
         int goldie = 0;
@@ -412,6 +462,7 @@ public class Final_Auto_Crater extends LinearOpMode {
     private void rotateRight (double angle){
         rotation(- angle);
     }
+
     String formatAngle(AngleUnit angleUnit, double angle) {
         return formatDegrees(AngleUnit.DEGREES.fromUnit(angleUnit, angle));
     }
@@ -453,7 +504,7 @@ public class Final_Auto_Crater extends LinearOpMode {
             robot.armMotor.setPower(Math.abs(speed));
 
             while (opModeIsActive() && (runtime.seconds() < timeoutS) && (robot.armMotor.isBusy())
-                    && !isStopRequested() && !(gamepad1.a && gamepad1.b))
+                    && !isStopRequested())
             {
 
                 // Display it for the driver.
@@ -788,7 +839,7 @@ public class Final_Auto_Crater extends LinearOpMode {
         robot.latchServo.setPosition(LATCH_LOCK_OPEN);
         idle();
         encoderArm(1, 130, -1, 15);///CLOSE
-        encoderArm( 1, 2800, 1, 15);///UNLATCH
+        encoderArm( 1, 2600, 1, 15);///UNLATCH
         /**
          robot.armMotor.setPower(0);
          sleep(3000);

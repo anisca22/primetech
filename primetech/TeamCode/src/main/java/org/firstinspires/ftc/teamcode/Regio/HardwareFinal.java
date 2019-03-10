@@ -31,6 +31,7 @@ package org.firstinspires.ftc.teamcode.Regio;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -69,6 +70,8 @@ public class HardwareFinal
     public Servo latchServo;
     public Servo mineralServo;
     //public Servo transmissionServo;
+
+    DigitalChannel digitalTouch;
 
     public static final double      DRIVE_SPEED = 1;
     public static final double      TURN_SPEED = 0.5;
@@ -141,6 +144,8 @@ public class HardwareFinal
         mineralServo.setPosition(MINERAL_LOCK_CLOSED);
         //transmissionServo.setPosition(TRANSMISSION_LOCK_LATCH);
 
+        digitalTouch = hwMap.get(DigitalChannel.class, "touch");
+        digitalTouch.setMode(DigitalChannel.Mode.INPUT);
     }
 
 }

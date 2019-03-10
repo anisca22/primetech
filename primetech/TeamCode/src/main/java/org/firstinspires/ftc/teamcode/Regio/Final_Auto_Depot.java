@@ -190,66 +190,76 @@ public class Final_Auto_Depot extends LinearOpMode {
 
         telemetry.addData("DIFFERENCE", heading -start);
         telemetry.update();
+        //sleep(5000);
 
-        strafeRight(50, DRIVE_SPEED);
+        driveBackward(30, DRIVE_SPEED / 5);
+        printHeading();
 
-        rotateRight(heading - start + 60);
+        strafeLeft(70, DRIVE_SPEED);
+        printHeading();
 
-        encoderArm(1, 500, -1, 15);///CLOSE
+        encoderArm(DRIVE_SPEED, 800, -1, 15);
 
+        driveForward(50, DRIVE_SPEED);
+        printHeading();
 
-        if (goldPosition == 1) //RIGHT
+        if (goldPosition == 1)
         {
+            /** RIGHT **/
+            strafeRight(120, DRIVE_SPEED);
             rotateRight(10);
-            encoderMainDiagonal(DRIVE_SPEED, -400, 15);
+            printHeading();
+
+            encoderMainDiagonal(DRIVE_SPEED, -350, 15);
+            rotateLeft(30);
+            printHeading();
+
+            driveForward(60, DRIVE_SPEED);
+            rotateLeft(180);
+            printHeading();
+            driveBackward(100, DRIVE_SPEED);
+            encoderArm(DRIVE_SPEED, 1300, 1, 15);
         }
-        else if (goldPosition == -1) //LEFT
+        else if (goldPosition == -1)
         {
-            driveForward(100, DRIVE_SPEED);
-            strafeLeft(100, DRIVE_SPEED);
-            rotateLeft(10);
-            driveForward(150,DRIVE_SPEED);
+            /** LEFT **/
+            encoderSecondaryDiagonal(DRIVE_SPEED, -150, 15);
+            strafeRight(40, DRIVE_SPEED);
+            encoderSecondaryDiagonal(DRIVE_SPEED, -250, 15);
+            rotateRight(30);
+            printHeading();
+
+            driveForward(60, DRIVE_SPEED);
+            rotateLeft(180);
+            printHeading();
+            encoderArm(DRIVE_SPEED, 1300, 1, 15);
         }
-        else //CENTER
+        else
         {
-            rotateRight(5);
+            /** CENTER **/
+            strafeRight(110, DRIVE_SPEED);
             driveForward(50, DRIVE_SPEED);
+            strafeRight(50, DRIVE_SPEED);
             encoderSecondaryDiagonal(DRIVE_SPEED, -120, 15);
-            strafeLeft(50, DRIVE_SPEED);
-            driveForward(250, DRIVE_SPEED);
+            driveForward(200, DRIVE_SPEED);
+            rotateLeft(180);
+            printHeading();
 
-            rotateRight(160);
-            robot.armMotor.setPower(1);
-            driveBackward(80, DRIVE_SPEED);
-            robot.armMotor.setPower(0);
-            encoderArm(1, 400, 1, 15);
+            driveBackward(60, DRIVE_SPEED);
+
+            encoderArm(DRIVE_SPEED, 1300, 1, 15);
 
         }
-
-
-        //encoderArm(1, 1300, 1, 15);
-        ///encoderSecondaryDiagonal(DRIVE_SPEED, 50, 15);
-        ///encoderSecondaryDiagonal(DRIVE_SPEED, -50, 15);
-
-        /**
-        if (goldPosition == 1) //RIGHT
-        {
-            moveBackwardRight(100, 0.5);
-        }
-        else if (goldPosition == 1) //LEFT
-        {
-            moveBackwardLeft(100, 0.5);
-        }
-        else //CENTER
-        {
-            driveBackward(100, 0.5);
-        }
-            */
-        /***  AUTONOMUS ENDS HERE                             ***/
-        /***                AUTONOMUS ENDS HERE               ***/
-        /***                            AUTONOMUS ENDS HERE   ***/
     }
 
+
+    public void printHeading()
+    {
+        angles = imu.getAngularOrientation(AxesReference.INTRINSIC, AxesOrder.ZYX, AngleUnit.DEGREES);
+        double heading = noformatAngle(angles.angleUnit, angles.firstAngle);
+        telemetry.addData("HEADING:", heading);
+        telemetry.update();
+    }
 
     public int checkTensorFlow(int T) {
         int goldie = 0;

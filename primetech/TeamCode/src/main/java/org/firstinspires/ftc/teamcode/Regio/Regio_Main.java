@@ -98,7 +98,14 @@ public class Regio_Main extends LinearOpMode {
 
             ///Drive
             drive = -gamepad1.left_stick_y;
-            strafe = -gamepad1.left_stick_x;
+            if (gamepad1.left_stick_x != 0 || gamepad1.right_stick_x != 0)
+            {
+                if (gamepad1.left_stick_x != 0)
+                    strafe = -gamepad1.left_stick_x;
+                else strafe = -gamepad1.right_stick_x;
+            }
+            else strafe = 0;
+
             if (gamepad1.left_trigger != 0)
                 turn = -gamepad1.left_trigger;
             else if (gamepad1.right_trigger != 0)
@@ -112,9 +119,9 @@ public class Regio_Main extends LinearOpMode {
             backRightPower  = Range.clip(+drive - turn - strafe, -1.0, 1.0);
 
             ///Arm
-            if (gamepad1.dpad_up)
+            if (gamepad1.dpad_up || gamepad2.dpad_up)
                 armPower = 1;
-            else if (gamepad1.dpad_down)
+            else if (gamepad1.dpad_down || gamepad2.dpad_down)
                 armPower = -1;
             else armPower = 0;
 
@@ -140,6 +147,13 @@ public class Regio_Main extends LinearOpMode {
                 collectorPower = 1;
             else if (gamepad2.a)
                 collectorPower = 0;
+
+            if (robot.digitalTouch.getState() == true) {
+                telemetry.addData("Digital Touch", "Is Not Pressed");
+            } else {
+                telemetry.addData("Digital Touch", "Is Pressed");
+            }
+            telemetry.update();
 
             /**PUTERI**/
 
