@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.Training.Oana;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -56,7 +57,7 @@ import static org.firstinspires.ftc.teamcode.HardwareTest.MARKER_START;
  */
 
 @TeleOp(name="Basic: Iterative OpMode", group="Iterative Opmode")
-///@Disabled
+@Disabled
 public class Teleop_Oana_Iterative extends OpMode
 {
     // Declare OpMode members.

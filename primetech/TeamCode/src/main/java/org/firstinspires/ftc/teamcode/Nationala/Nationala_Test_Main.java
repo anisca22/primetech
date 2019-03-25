@@ -27,22 +27,18 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.Regio;
+package org.firstinspires.ftc.teamcode.Nationala;
 
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.HardwareMecanum;
-
 import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
-import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_CLOSED;
-import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_OPEN;
-import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_CLOSED;
-import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_OPEN;
+import static org.firstinspires.ftc.teamcode.Nationala.HardwareNationalTest.MARKER_RELEASED;
+import static org.firstinspires.ftc.teamcode.Nationala.HardwareNationalTest.MARKER_START;
+import static org.firstinspires.ftc.teamcode.Nationala.HardwareNationalTest.stringValue;
 
 
 /**
@@ -58,26 +54,27 @@ import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_OP
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="Regio_Main", group="Linear Opmode")
-@Disabled
-public class Regio_Main extends LinearOpMode {
+@TeleOp(name="Nationala_Test_Main", group="Linear Opmode")
+//@Disabled
+public class Nationala_Test_Main extends LinearOpMode {
 
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    double armPower = 0;
+
     double drive = 0;
     double turn = 0;
     double strafe = 0;
+
     double frontLeftPower = 0;
     double frontRightPower = 0;
     double backLeftPower = 0;
     double backRightPower = 0;
-    double extenderPower = 0;
-    double collectorPower = 0;
-    double latchPosition = LATCH_LOCK_CLOSED;
-    double minerealPosition = MINERAL_LOCK_CLOSED;
 
-    HardwareFinal robot = new HardwareFinal();
+    double armsPower = 0;
+    double stringPower = 0;
+    double liftPower = 0;
+
+    HardwareNationalTest robot = new HardwareNationalTest();
 
     @Override
     public void runOpMode() {
@@ -98,19 +95,40 @@ public class Regio_Main extends LinearOpMode {
             /**GAMEPAD 1**/
 
             ///Drive
-            drive = -gamepad1.left_stick_y;
+            if (gamepad1.left_stick_y != 0)
+                drive = -gamepad1.left_stick_y;
+            else if (gamepad2.left_stick_y != 0)
+                drive = -gamepad2.left_stick_y;
+            else drive = 0;
+
             if (gamepad1.left_stick_x != 0 || gamepad1.right_stick_x != 0)
             {
                 if (gamepad1.left_stick_x != 0)
                     strafe = -gamepad1.left_stick_x;
                 else strafe = -gamepad1.right_stick_x;
             }
+            else if (gamepad2.left_stick_x != 0 || gamepad2.right_stick_x != 0)
+            {
+                if (gamepad2.left_stick_x != 0)
+                    strafe = -gamepad2.left_stick_x;
+                else strafe = -gamepad2.right_stick_x;
+            }
             else strafe = 0;
 
-            if (gamepad1.left_trigger != 0)
-                turn = -gamepad1.left_trigger;
-            else if (gamepad1.right_trigger != 0)
-                turn = gamepad1.right_trigger;
+            if (gamepad1.left_trigger != 0 || gamepad1.right_trigger != 0)
+            {
+                if (gamepad1.left_trigger != 0)
+                    turn = -gamepad1.left_trigger;
+                else if (gamepad1.right_trigger != 0)
+                    turn = gamepad1.right_trigger;
+            }
+            else if (gamepad2.left_trigger != 0 || gamepad2.right_trigger != 0)
+            {
+                if (gamepad2.left_trigger != 0)
+                    turn = -gamepad2.left_trigger;
+                else if (gamepad2.right_trigger != 0)
+                    turn = gamepad2.right_trigger;
+            }
             else turn = 0;
             //turn = gamepad1.right_stick_x;
 
@@ -119,42 +137,39 @@ public class Regio_Main extends LinearOpMode {
             backLeftPower   = Range.clip(-drive - turn - strafe, -1.0, 1.0);
             backRightPower  = Range.clip(+drive - turn - strafe, -1.0, 1.0);
 
-            ///Arm
-            if (gamepad1.dpad_up || gamepad2.dpad_up)
-                armPower = 1;
-            else if (gamepad1.dpad_down || gamepad2.dpad_down)
-                armPower = -1;
-            else armPower = 0;
+            ///Lift
 
-            if (gamepad1.b)
-                latchPosition = LATCH_LOCK_CLOSED;
-            else if (gamepad1.a)
-                latchPosition = LATCH_LOCK_OPEN;
+            if (gamepad1.a)
+                robot.collectionServo.setPower(1);
+            else if (gamepad1.b)
+                robot.collectionServo.setPower(-1);
+            else if (gamepad1.y)
+                robot.collectionServo.setPower(0);
+
+            if (gamepad1.dpad_left)
+                stringPower = 1;
+            else if (gamepad1.dpad_right || gamepad2.dpad_right)
+                stringPower = -1;
+            else stringPower = 0;
+
+            if (gamepad1.dpad_up)
+                armsPower = 1;
+            else if (gamepad1.dpad_down)
+                armsPower = -1;
+            else armsPower = 0;
 
             /**GAMEPAD 2**/
 
-            if (gamepad2.left_stick_x != 0)
-                extenderPower = gamepad2.left_stick_x;
-            else extenderPower = 0;
-
             if (gamepad2.dpad_up)
-                minerealPosition = MINERAL_LOCK_OPEN;
+                liftPower = 1;
             else if (gamepad2.dpad_down)
-                minerealPosition = MINERAL_LOCK_CLOSED;
+                liftPower = -1;
+            else liftPower = 0;
 
-            if (gamepad2.x)
-                collectorPower = -1;
+            if (gamepad2.a)
+                robot.markerServo.setPosition(MARKER_START);
             else if (gamepad2.b)
-                collectorPower = 1;
-            else if (gamepad2.a)
-                collectorPower = 0;
-
-            if (robot.digitalTouch.getState() == true) {
-                telemetry.addData("Digital Touch", "Is Not Pressed");
-            } else {
-                telemetry.addData("Digital Touch", "Is Pressed");
-            }
-            telemetry.update();
+                robot.markerServo.setPosition(MARKER_RELEASED);
 
             /**PUTERI**/
 
@@ -164,12 +179,10 @@ public class Regio_Main extends LinearOpMode {
             robot.backRightMotor.setPower(backRightPower);
             robot.frontRightMotor.setPower(frontRightPower);
 
-            robot.extenderMotor.setPower(extenderPower);
-            robot.armMotor.setPower(armPower);
-            robot.collectionMotor.setPower(collectorPower);
-
-            robot.latchServo.setPosition(latchPosition);
-            robot.mineralServo.setPosition(minerealPosition);
+            robot.armMotor.setPower(armsPower);
+            //robot.rightArmMotor.setPower(armsPower);
+            robot.stringMotor.setPower(stringPower);
+            robot.liftMotor.setPower(liftPower);
         }
 
         stopItDude();
@@ -183,51 +196,78 @@ public class Regio_Main extends LinearOpMode {
         robot.backRightMotor.setPower(0);
         robot.frontRightMotor.setPower(0);
 
-        //OPRIT MOTORUL DE RIDICARE
         robot.armMotor.setPower(0);
+        //robot.rightArmMotor.setPower(0);
+        robot.stringMotor.setPower(0);
+        robot.liftMotor.setPower(0);
 
     }
 
-    public void encoderArm(double speed, double distance, double direction, double timeoutS) {
-        int armTarget;
+    public void extendString(double distance, double speed)
+    {
+        if (opModeIsActive())
+        {
+            int stringTarget;
+            robot.stringMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.stringMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            stringTarget = robot.stringMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM * stringValue);
+            robot.stringMotor.setTargetPosition(stringTarget);
+            robot.stringMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.stringMotor.setPower(Math.abs(speed));
 
-        if (direction == -1)
-            robot.armMotor.setDirection(DcMotor.Direction.REVERSE);
-        else if (direction == 1)
-            robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
-        // Ensure that the opmode is still active
-        robot.armMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            while (opModeIsActive() && robot.stringMotor.isBusy() && !isStopRequested())
+            {
+                telemetry.addData("Path1",  "Running to :%7d", stringTarget);
+                telemetry.addData("Path2",  "Running at :%7d", robot.stringMotor.getCurrentPosition());
+                telemetry.update();
+            }
+
+            robot.stringMotor.setPower(0);
+
+        }
+    }
+
+    public void encoderArm(double speed, double distance, double direction, double timeoutS) {
+
         if (opModeIsActive() && !isStopRequested() && !(gamepad1.dpad_up && gamepad1.b)) {
 
-            // Determine new target position, and pass to motor controller
-            armTarget = robot.armMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+            int armTarget;
 
-            robot.armMotor.setTargetPosition(armTarget);
+            if (direction == -1)
+                robot.liftMotor.setDirection(DcMotor.Direction.REVERSE);
+            else if (direction == 1)
+                robot.liftMotor.setDirection(DcMotor.Direction.FORWARD);
+            // Ensure that the opmode is still active
+            robot.liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+            robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+            // Determine new target position, and pass to motor controller
+            armTarget = robot.liftMotor.getCurrentPosition() + (int)(distance * COUNTS_PER_MM);
+
+            robot.liftMotor.setTargetPosition(armTarget);
 
             // Turn On RUN_TO_POSITION
-            robot.armMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            robot.liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
 
             // reset the timeout time and start motion.
             runtime.reset();
-            robot.armMotor.setPower(Math.abs(speed));
+            robot.liftMotor.setPower(Math.abs(speed));
 
-            while (opModeIsActive() && (runtime.seconds() < timeoutS) && (robot.armMotor.isBusy())
-                    && !isStopRequested() && !(gamepad1.a && gamepad1.b))
+            while (opModeIsActive() && (runtime.seconds() < timeoutS) && (robot.liftMotor.isBusy()) && !isStopRequested())
             {
 
                 // Display it for the driver.
                 telemetry.addData("Path1",  "Running to :%7d", armTarget);
-                telemetry.addData("Path2",  "Running at :%7d", robot.armMotor.getCurrentPosition());
+                telemetry.addData("Path2",  "Running at :%7d", robot.liftMotor.getCurrentPosition());
                 telemetry.update();
             }
 
             // Stop all motion;
-            robot.armMotor.setPower(0);
+            robot.liftMotor.setPower(0);
 
             // Turn off RUN_TO_POSITION
-            robot.armMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-            robot.armMotor.setDirection(DcMotor.Direction.FORWARD);
+            robot.liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            robot.liftMotor.setDirection(DcMotor.Direction.FORWARD);
         }
     }
 }

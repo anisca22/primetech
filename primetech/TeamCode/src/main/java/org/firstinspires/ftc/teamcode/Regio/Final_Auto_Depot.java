@@ -34,6 +34,7 @@ import android.drm.DrmInfoRequest;
 import com.qualcomm.hardware.bosch.BNO055IMU;
 import com.qualcomm.hardware.bosch.JustLoggingAccelerationIntegrator;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -88,7 +89,7 @@ import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_OPEN
  */
 
 @Autonomous(name="Depot", group="Pushbot")
-///@Disabled
+@Disabled
 public class Final_Auto_Depot extends LinearOpMode {
 
     /* Declare OpMode members. */

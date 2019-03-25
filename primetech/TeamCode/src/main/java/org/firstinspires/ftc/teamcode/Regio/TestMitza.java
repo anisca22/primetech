@@ -27,102 +27,73 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.ActualCode;
+package org.firstinspires.ftc.teamcode.Regio;
 
 import com.qualcomm.robotcore.eventloop.opmode.Disabled;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
+import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
-import com.vuforia.CameraDevice;
 
-import org.firstinspires.ftc.robotcore.external.ClassFactory;
-import org.firstinspires.ftc.robotcore.external.navigation.VuforiaLocalizer;
-import org.firstinspires.ftc.robotcore.external.tfod.Recognition;
-import org.firstinspires.ftc.robotcore.external.tfod.TFObjectDetector;
+import static org.firstinspires.ftc.teamcode.HardwareDemoCluj.COUNTS_PER_MM;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.LATCH_LOCK_OPEN;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_CLOSED;
+import static org.firstinspires.ftc.teamcode.Regio.HardwareFinal.MINERAL_LOCK_OPEN;
 
-import java.util.List;
-
-import static org.firstinspires.ftc.teamcode.HardwareRobot.MAX_PUTERE;
-import static org.firstinspires.ftc.teamcode.HardwareRobot.MIN_PUTERE;
 
 /**
- * This file contains an example of an iterative (Non-Linear) "OpMode".
- * An OpMode is a 'program' that runs in either the autonomous or the teleop period of an FTC match.
- * The names of OpModes appear on the menu of the FTC Driver Station.
- * When an selection is made from the menu, the corresponding OpMode
+ * This file contains an minimal example of a Linear "OpMode". An OpMode is a 'program' that runs in either
+ * the autonomous or the teleop period of an FTC match. The names of OpModes appear on the menu
+ * of the FTC Driver Station. When an selection is made from the menu, the corresponding OpMode
  * class is instantiated on the Robot Controller and executed.
  *
  * This particular OpMode just executes a basic Tank Drive Teleop for a two wheeled robot
- * It includes all the skeletal structure that all iterative OpModes contain.
+ * It includes all the skeletal structure that all linear OpModes contain.
  *
  * Use Android Studios to Copy this Class, and Paste it into your team's code folder with a new name.
  * Remove or comment out the @Disabled line to add this opmode to the Driver Station OpMode list
  */
 
-@TeleOp(name="SilverFish", group="Iterative Opmode")
+@TeleOp(name="1 Motor Test", group="Linear Opmode")
 @Disabled
-public class SilverFish_Nou extends OpMode
-{
+public class TestMitza extends LinearOpMode {
+
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
-    public DcMotor  motorLeft;
-    public DcMotor  motorRight;
-
+    public DcMotor motoras;
+    double speed = 0;
     @Override
-    public void init() {
-
-
-        motorLeft = hardwareMap.get(DcMotor .class, "motorLeft");
-        motorRight = hardwareMap.get(DcMotor.class, "motorRight");
-        motorLeft.setDirection(DcMotor.Direction.REVERSE);
-        motorRight.setDirection(DcMotor.Direction.FORWARD);
-        motorLeft.setPower(0);
-        motorRight.setPower(0);
+    public void runOpMode() {
+        motoras = hardwareMap.get(DcMotor.class, "motoras");
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();
-    }
 
-    @Override
-    public void init_loop() {
-    }
-
-    @Override
-    public void start() {
+        while (!opModeIsActive() && !isStopRequested())
+        {
+            telemetry.addData("Status", "Waiting for start");
+            telemetry.update();
+        }
         runtime.reset();
+
+        // run until the end of the match (driver presses STOP)
+        while (opModeIsActive() && !isStopRequested()) {
+
+            if (gamepad1.a)
+                speed = 0.5;
+            else if(gamepad1.b)
+                speed = 1;
+            motoras.setPower(speed * gamepad1.left_stick_x);
+        }
+
+        stopItDude();
+
     }
 
-    @Override
-    public void loop() {
-        ///CITIRE VARIABILE
-        double y = -gamepad1.left_stick_y * 0.9; ///FATA SPATE
-        double x  =  gamepad1.right_stick_x * 0.6; /// STANGA DREAPTA
+    public void stopItDude(){
+        motoras.setPower(0);
 
-        ///CALCULARE PUTERE
-        double leftPower = Range.clip(y - x, MIN_PUTERE, MAX_PUTERE);
-        double rightPower = Range.clip(y +   x, MIN_PUTERE, MAX_PUTERE);
-
-
-
-
-        //SETARE PUTERE
-        motorLeft.setPower(leftPower);
-        motorRight.setPower(rightPower);
-
-        // Show the elapsed game time and wheel power.
-        //telemetry.addData("Status", "Run Time: " + runtime.toString());
-        //telemetry.addData("Motors", "left (%.2f), right (%.2f)", leftPower, rightPower);
     }
-
-    /*
-     * Code to run ONCE after the driver hits STOP
-     */
-    @Override
-    public void stop() {
-        motorLeft.setPower(0);
-        motorRight.setPower(0);
-    }
-
 }
